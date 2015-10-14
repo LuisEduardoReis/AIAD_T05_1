@@ -30,7 +30,7 @@
                     <env:property name="type" class="String"/>
                 </env:objecttype>
 
-                <env:objecttype name="wanderer">
+                <env:objecttype name="fireman">
                     <env:property name="position" class="IVector2"/>
                     <env:property name="speed" class="Double"/>
                 </env:objecttype>
@@ -42,7 +42,7 @@
             </env:processtypes>
 
             <env:avatarmappings>
-                <env:avatarmapping componenttype="Wanderer" objecttype="wanderer"/>
+                <env:avatarmapping componenttype="Fireman" objecttype="fireman"/>
             </env:avatarmappings>
 
 
@@ -53,7 +53,7 @@
 
             <env:perspectives>
                 <env:perspective name="icons" class="Perspective2D" objectplacement="center">
-                    <env:drawable objecttype="wanderer" height="1.0" width="1.0">
+                    <env:drawable objecttype="fireman" height="1.0" width="1.0">
                         <env:texturedrectangle layer="2" imagepath="images/wanderer.png"/>
                     </env:drawable>
 
@@ -91,7 +91,7 @@
     </extensiontypes>
 
     <componenttypes>
-        <componenttype name="Wanderer" filename="agents\WandererBDI.class"/>
+        <componenttype name="Fireman" filename="agents\FiremanBDI.class"/>
     </componenttypes>
 
     <configurations>
@@ -110,7 +110,7 @@
             </extensions>
 
             <components>
-                <component type="Wanderer"/>
+                <component type="Fireman"/>
             </components>
 
         </configuration>

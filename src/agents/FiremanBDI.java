@@ -15,7 +15,7 @@ import java.util.Random;
  */
 
 @Agent
-public class WandererBDI {
+public class FiremanBDI {
     @Agent
     protected BDIAgent agent;
 
@@ -35,7 +35,10 @@ public class WandererBDI {
         int spaceHeight = space.getAreaSize().getXAsInteger();
         int spaceWidth = space.getAreaSize().getYAsInteger();
 
-        myself.setProperty("position", new Vector2Int(r.nextInt(spaceWidth), r.nextInt(spaceHeight)));
+        while(true) {
+        	myself.setProperty("position", new Vector2Int(r.nextInt(spaceWidth), r.nextInt(spaceHeight)));
+        	agent.waitForDelay(500).get();
+        }
 
     }
 
