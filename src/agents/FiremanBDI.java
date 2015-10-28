@@ -34,6 +34,8 @@ public class FiremanBDI {
 
         int spaceHeight = space.getAreaSize().getXAsInteger();
         int spaceWidth = space.getAreaSize().getYAsInteger();
+        
+        System.out.println(space.getProperty("wind_velocity"));
 
         while(true) {
         	myself.setProperty("position", new Vector2Int(r.nextInt(spaceWidth), r.nextInt(spaceHeight)));
