@@ -22,13 +22,14 @@
     </imports>
 
     <extensiontypes>
-        <env:envspacetype name="2dspace" class="Grid2D" width="20" height="20">
+        <env:envspacetype name="2dspace" class="Grid2D" width="40" height="40">
             
             <env:objecttypes>
-
                 <env:objecttype name="terrain">
                     <env:property name="position" class="IVector2"/>
                     <env:property name="type" class="String"/>
+                    <env:property name="onFire" class="Integer"/>
+                    <env:property name="fuel" class="Integer"/>
                 </env:objecttype>
 
                 <env:objecttype name="fireman">
@@ -42,6 +43,9 @@
 
             <env:processtypes>
                 <env:processtype name="create_forest" class="ForestProcess"/>
+                <env:processtype name="spread_fire" class="FireProcess">
+                	<env:property name="tickrate">5</env:property>
+                </env:processtype>
             </env:processtypes>
 
             <env:avatarmappings>
@@ -62,16 +66,26 @@
 
                     <env:drawable objecttype="terrain" height="1.0" width="1.0">
                         <env:texturedrectangle layer="1" imagepath="images/terrain_2.png">
-                            <env:drawcondition>$object.type.equals(0)</env:drawcondition>
-                        </env:texturedrectangle>
-
-                        <env:texturedrectangle layer="1" imagepath="images/terrain_3.png">
                             <env:drawcondition>$object.type.equals(1)</env:drawcondition>
                         </env:texturedrectangle>
 
-                        <env:texturedrectangle layer="1" imagepath="images/terrain_4.png">
+                        <env:texturedrectangle layer="1" imagepath="images/terrain_3.png">
                             <env:drawcondition>$object.type.equals(2)</env:drawcondition>
                         </env:texturedrectangle>
+
+                        <env:texturedrectangle layer="1" imagepath="images/terrain_4.png">
+                            <env:drawcondition>$object.type.equals(3)</env:drawcondition>
+                        </env:texturedrectangle>
+                        
+                        <env:texturedrectangle layer="1" imagepath="images/burned.png">
+                            <env:drawcondition>$object.fuel == 0</env:drawcondition>
+                        </env:texturedrectangle>  
+                        
+                        <env:texturedrectangle layer="1" imagepath="images/fire.png">
+                            <env:drawcondition>$object.onFire >= 50</env:drawcondition>
+                        </env:texturedrectangle>
+                        
+                                              
 
                     </env:drawable>
 
@@ -106,6 +120,7 @@
                     
                     <env:processes>
                         <env:process type="create_forest"/>
+                        <env:process type="spread_fire"/>
                     </env:processes>
 
                     <env:observers>
