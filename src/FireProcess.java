@@ -37,7 +37,7 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
 	int w,h;
 	Random r = new Random();
 	
-    @Override
+@Override
     public void start(IClockService arg0, IEnvironmentSpace arg1) {
 
         space = (Space2D)arg1;
@@ -53,12 +53,12 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
         this.next = new State(w,h);
     }
 
-    @Override
+@Override
     public void shutdown(IEnvironmentSpace iEnvironmentSpace) {
 
     }
     
-    @Override
+@Override
     public void execute(IClockService iClockService, IEnvironmentSpace iEnvironmentSpace) {
     	 for(int i = 0; i < terrain.length; i++) {
  			current.fire[i] = next.fire[i] = (int) terrain[i].getProperty("onFire");
