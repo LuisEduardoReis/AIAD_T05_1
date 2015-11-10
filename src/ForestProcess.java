@@ -9,9 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-/**
- * Created by Leonel Araújo on 22/11/2014.
- */
 public class ForestProcess extends SimplePropertyObject implements ISpaceProcess {
 
     @Override
@@ -29,10 +26,10 @@ public class ForestProcess extends SimplePropertyObject implements ISpaceProcess
         	for(int j = 0; j < spaceWidth; j++) {
         		Map<String, Object> properties = new HashMap<String, Object>();
         		properties.put("position", new Vector2Int(j, i));
-        		int type = r.nextFloat() < 0.05 ? r.nextInt(3)+1 : 0;
-        		properties.put("type", type);
-        		properties.put("onFire", 0);
-        		properties.put("fuel", (type +1)*100);
+        		int type = r.nextFloat() < 0.0 ? r.nextInt(3)+1 : 0;
+        		properties.put("type", (int) type);
+        		properties.put("fire", (float) 0);
+        		properties.put("fuel", (float) (100 + type*50));
         		
         		space.createSpaceObject("terrain", properties, null);
         	}

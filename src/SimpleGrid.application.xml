@@ -28,15 +28,12 @@
                 <env:objecttype name="terrain">
                     <env:property name="position" class="IVector2"/>
                     <env:property name="type" class="String"/>
-                    <env:property name="onFire" class="Integer"/>
-                    <env:property name="fuel" class="Integer"/>
+                    <env:property name="fire" class="Float"/>
+                    <env:property name="fuel" class="Float"/>
                 </env:objecttype>
 
                 <env:objecttype name="fireman">
                     <env:property name="position" class="IVector2"/>
-                    <env:property name="speed" class="Double"/>
-                    <env:property name="energy" class="Double"/>
-                    <env:property name="water_qnt" class="Double"/>
                 </env:objecttype>
             </env:objecttypes>
 
@@ -82,7 +79,7 @@
                         </env:texturedrectangle>  
                         
                         <env:texturedrectangle layer="1" imagepath="images/fire.png">
-                            <env:drawcondition>$object.onFire >= 50</env:drawcondition>
+                            <env:drawcondition>$object.fire >= 50</env:drawcondition>
                         </env:texturedrectangle>
                         
                                            
@@ -92,9 +89,13 @@
                         <env:tiledlayer width="0.25" height="0.25" imagepath="images/terrain_1.png" />
                     </env:prelayers>
 
+                    
                     <env:postlayers>
+                        <!-- 
                         <env:gridlayer width="1.0" height="1.0" color="black" />
+                        -->
                     </env:postlayers>
+                     
                 </env:perspective>
             </env:perspectives>
 
@@ -115,7 +116,7 @@
             <extensions>
                 <env:envspace name="2dspace" type="2dspace">
                   <env:property name="wind_direction" class="Float">50.0f</env:property>
-                   <env:property name="wind_velocity" class="Float">1.0f</env:property>
+                  <env:property name="wind_velocity" class="Float">1.0f</env:property>
                     
                     <env:processes>
                         <env:process type="create_forest"/>
