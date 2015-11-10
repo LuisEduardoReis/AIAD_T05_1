@@ -10,9 +10,6 @@ import jadex.micro.annotation.AgentBody;
 
 import java.util.Random;
 
-/**
- * Created by Leonel Araújo on 22/11/2014.
- */
 
 @Agent
 public class FiremanBDI {
@@ -30,6 +27,7 @@ public class FiremanBDI {
     public void body(){
         Random r = new Random();
 
+        
         int spaceHeight = space.getAreaSize().getXAsInteger();
         int spaceWidth = space.getAreaSize().getYAsInteger();
 

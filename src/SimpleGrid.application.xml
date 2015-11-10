@@ -44,7 +44,7 @@
             <env:processtypes>
                 <env:processtype name="create_forest" class="ForestProcess"/>
                 <env:processtype name="spread_fire" class="FireProcess">
-                	<env:property name="tickrate">5</env:property>
+                	<env:property name="tickrate">15</env:property>
                 </env:processtype>
             </env:processtypes>
 
@@ -85,8 +85,7 @@
                             <env:drawcondition>$object.onFire >= 50</env:drawcondition>
                         </env:texturedrectangle>
                         
-                                              
-
+                                           
                     </env:drawable>
 
                     <env:prelayers>
@@ -115,8 +114,8 @@
         <configuration name="Default">
             <extensions>
                 <env:envspace name="2dspace" type="2dspace">
-                  <env:property name="wind_direction" class="Double">90</env:property>
-                   <env:property name="wind_velocity" class="Double">2.0</env:property>
+                  <env:property name="wind_direction" class="Float">50.0f</env:property>
+                   <env:property name="wind_velocity" class="Float">1.0f</env:property>
                     
                     <env:processes>
                         <env:process type="create_forest"/>
