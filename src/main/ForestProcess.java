@@ -1,3 +1,4 @@
+package main;
 import jadex.bridge.service.types.clock.IClockService;
 import jadex.commons.SimplePropertyObject;
 import jadex.extension.envsupport.environment.IEnvironmentSpace;
@@ -26,7 +27,7 @@ public class ForestProcess extends SimplePropertyObject implements ISpaceProcess
         	for(int j = 0; j < spaceWidth; j++) {
         		Map<String, Object> properties = new HashMap<String, Object>();
         		properties.put("position", new Vector2Int(j, i));
-        		int type = r.nextFloat() < 0.0 ? r.nextInt(3)+1 : 0;
+        		int type = r.nextFloat() < 0.15 ? r.nextInt(3)+1 : 0;
         		properties.put("type", (int) type);
         		properties.put("fire", (float) 0);
         		properties.put("fuel", (float) (100 + type*50));

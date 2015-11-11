@@ -17,7 +17,7 @@
         <import>jadex.extension.envsupport.observer.perspective.*</import>
         <import>jadex.extension.envsupport.evaluation.*</import>
         <import>jadex.extension.envsupport.observer.gui.plugin.*</import>
-
+		<import>main.*</import>
 
     </imports>
 
