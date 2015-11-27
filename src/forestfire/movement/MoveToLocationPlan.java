@@ -1,8 +1,9 @@
-package movement;
+package forestfire.movement;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import forestfire.MoveTask;
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.PlanAPI;
 import jadex.bdiv3.annotation.PlanBody;

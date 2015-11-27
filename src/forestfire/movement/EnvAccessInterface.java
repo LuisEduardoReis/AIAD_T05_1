@@ -1,4 +1,4 @@
-package movement;
+package forestfire.movement;
 
 import jadex.extension.envsupport.environment.ISpaceObject;
 import jadex.extension.envsupport.environment.space2d.Space2D;

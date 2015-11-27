@@ -1,4 +1,4 @@
-package main;
+package forestfire;
 import jadex.bridge.service.types.clock.IClockService;
 import jadex.commons.SimplePropertyObject;
 import jadex.extension.envsupport.environment.IEnvironmentSpace;

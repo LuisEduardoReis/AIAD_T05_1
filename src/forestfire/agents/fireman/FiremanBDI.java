@@ -1,30 +1,29 @@
-package agents.fireman;
+package forestfire.agents.fireman;
 
 import jadex.bdiv3.BDIAgent;
 import jadex.bdiv3.annotation.Belief;
+import jadex.bdiv3.annotation.Body;
 import jadex.bdiv3.annotation.Capability;
 import jadex.bdiv3.annotation.Goal;
-import jadex.bdiv3.annotation.Body;
 import jadex.bdiv3.annotation.GoalCreationCondition;
 import jadex.bdiv3.annotation.GoalRecurCondition;
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.Plans;
+import jadex.bdiv3.runtime.ChangeEvent;
+import jadex.bridge.service.annotation.Service;
 import jadex.extension.envsupport.environment.ISpaceObject;
-import jadex.extension.envsupport.environment.space2d.Grid2D;
+import jadex.extension.envsupport.environment.space2d.ContinuousSpace2D;
 import jadex.extension.envsupport.environment.space2d.Space2D;
 import jadex.extension.envsupport.math.Vector2Int;
 import jadex.micro.annotation.Agent;
 import jadex.micro.annotation.AgentBody;
-import jadex.bdiv3.annotation.Trigger;
-import jadex.bdiv3.runtime.ChangeEvent;
-import jadex.bridge.service.annotation.Service;
-import movement.EnvAccessInterface;
-import movement.MoveToLocationPlan;
-import movement.MovementCapability;
+import forestfire.movement.EnvAccessInterface;
+import forestfire.movement.MovementCapability;
 
 @Agent
 @Service
 //@Plans({@Plan(trigger = @Trigger(goals = FiremanBDI.Explore.class), body = @Body(MoveToLocationPlan.class))})
+@Plans(@Plan(body=@Body(FiremanPlan.class)))
 public class FiremanBDI implements EnvAccessInterface {
 	@Agent
 	protected BDIAgent agent;
@@ -38,7 +37,7 @@ public class FiremanBDI implements EnvAccessInterface {
 
 	
 	@Belief
-	protected Grid2D space = (Grid2D) agent.getParentAccess()
+	protected ContinuousSpace2D space = (ContinuousSpace2D) agent.getParentAccess()
 			.getExtension("2dspace").get();
 
 	@Belief
@@ -74,7 +73,7 @@ public class FiremanBDI implements EnvAccessInterface {
 		 * 
 		 * finalPos = new Vector2Int(currentX + 5, currentY);
 		 */
-
+		
 		agent.adoptPlan(new FiremanPlan());
 
 		System.out.println("Finished");

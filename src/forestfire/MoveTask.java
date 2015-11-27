@@ -1,4 +1,5 @@
-package movement;
+package forestfire;
+
 
 import jadex.bridge.service.types.clock.IClockService;
 import jadex.extension.envsupport.environment.AbstractTask;
@@ -40,7 +41,7 @@ public class MoveTask extends AbstractTask {
 		IVector2 direction = destination.copy().subtract(loc).normalize();
 		double dist = ((Space2D) space).getDistance(loc, destination)
 				.getAsDouble();
-		double maxdist = progress * speed * 0.001;
+		double maxdist = progress * speed *0.001;
 		IVector2 newloc = dist <= maxdist ? destination : direction.multiply(
 				maxdist).add(loc);
 		((Space2D) space).setPosition(obj.getId(), newloc);

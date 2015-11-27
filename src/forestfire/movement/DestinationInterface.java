@@ -1,4 +1,4 @@
-package movement;
+package forestfire.movement;
 
 import jadex.extension.envsupport.math.IVector2;
 
