@@ -20,6 +20,9 @@ public class MoveTask extends AbstractTask {
 	/** The speed property of the moving object (units per second). */
 	public static final String PROPERTY_SPEED = "speed";
 
+	/** The scope property. */
+	public static final String PROPERTY_SCOPE = "agent";
+
 	// -------- IObjectTask methods --------
 
 	/**
@@ -45,6 +48,7 @@ public class MoveTask extends AbstractTask {
 		IVector2 newloc = dist <= maxdist ? destination : direction.multiply(
 				maxdist).add(loc);
 		((Space2D) space).setPosition(obj.getId(), newloc);
+		
 		if (newloc == destination || ((double) obj.getProperty("health")) == 0)
 			setFinished(space, obj, true);
 	}

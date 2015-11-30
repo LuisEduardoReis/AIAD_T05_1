@@ -41,15 +41,9 @@ public class MoveToLocationPlan {
 		ISpaceObject myself	= capa.getMyself();
 		IVector2 dest = goal.getDestination();
 		
-//		System.out.println("move plan: "+goal.getDestination());
-		
-//		if(!((String)myself.getProperty("state")).equals("moving_to_hospital") && dest.equals(home))
-//			myself.setProperty("state", "moving_home");
-		
-		// Create a move task
 		Map<Object, Object> props = new HashMap<Object, Object>();
 		props.put(MoveTask.PROPERTY_DESTINATION, dest);
-//		props.put(MoveTask.PROPERTY_SCOPE, capa.getCapability().getAgent().getExternalAccess());
+		//props.put(MoveTask.PROPERTY_SCOPE, capa.getCapability().getAgent().getExternalAccess());
 		props.put(AbstractTask.PROPERTY_CONDITION, new PlanFinishedTaskCondition(rplan));
 		IEnvironmentSpace space = capa.getEnvironment();
 		
@@ -58,9 +52,7 @@ public class MoveToLocationPlan {
 		Object mtaskid = space.createObjectTask(MoveTask.PROPERTY_TYPENAME, props, myself.getId());
 		space.addTaskListener(mtaskid, myself.getId(), lis);
 		fut.get();
-//		System.out.println("move after second task: "+rplan);
-		
-//		System.out.println("Moved to location: "+capa.getMyself());
+
 	}
 	
 	
