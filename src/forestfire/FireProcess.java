@@ -5,6 +5,7 @@ import jadex.extension.envsupport.environment.IEnvironmentSpace;
 import jadex.extension.envsupport.environment.ISpaceObject;
 import jadex.extension.envsupport.environment.ISpaceProcess;
 import jadex.extension.envsupport.environment.space2d.Space2D;
+import jadex.extension.envsupport.math.Vector2Double;
 
 import java.util.Random;
 
@@ -33,7 +34,7 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
 	
 	Space2D space;
 	State current, next;
-	ISpaceObject[] terrain; 
+	ISpaceObject[] terrain;
 	
 	int w,h;
 	Random r = new Random();
@@ -47,6 +48,8 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
         this.h = space.getAreaSize().getYAsInteger();
 
         this.terrain = space.getSpaceObjectsByType("terrain");
+
+        
         // Start fire
         terrain[Math.round(h/2)*w + Math.round(w/2)].setProperty("fire", 100.0f);
         
@@ -65,6 +68,7 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
 @Override
     public void execute(IClockService iClockService, IEnvironmentSpace iEnvironmentSpace) {
     	
+		
     	// Propagate fire
     	 for(int i = 0; i < terrain.length; i++) {
  			current.fire[i] = next.fire[i] = (float) terrain[i].getProperty("fire");
@@ -105,6 +109,16 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
   			terrain[i].setProperty("fire", next.fire[i]);
   			terrain[i].setProperty("fuel", next.fuel[i]);
   		}    
+    	 
+    	// Hurt fireman
+ 		for(ISpaceObject fireman : space.getSpaceObjectsByType("fireman")) {
+ 			Vector2Double pos = (Vector2Double) fireman.getProperty("position");
+ 			float fire = next.getFire(pos.getXAsInteger(), pos.getYAsInteger());
+ 			if (fire > 50) {
+ 				double current_health = (double) fireman.getProperty("health");
+ 				fireman.setProperty("health", Math.max(0.0, current_health - 10));
+ 			}
+ 		}
     	 
     	// Change wind
     	 if (r.nextInt(250) == 0) setRandomWind();

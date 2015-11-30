@@ -47,7 +47,7 @@ public class MoveToLocationPlan {
 //			myself.setProperty("state", "moving_home");
 		
 		// Create a move task
-		Map props = new HashMap();
+		Map<Object, Object> props = new HashMap<Object, Object>();
 		props.put(MoveTask.PROPERTY_DESTINATION, dest);
 //		props.put(MoveTask.PROPERTY_SCOPE, capa.getCapability().getAgent().getExternalAccess());
 		props.put(AbstractTask.PROPERTY_CONDITION, new PlanFinishedTaskCondition(rplan));

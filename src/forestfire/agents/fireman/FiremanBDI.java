@@ -4,17 +4,13 @@ import jadex.bdiv3.BDIAgent;
 import jadex.bdiv3.annotation.Belief;
 import jadex.bdiv3.annotation.Body;
 import jadex.bdiv3.annotation.Capability;
-import jadex.bdiv3.annotation.Goal;
-import jadex.bdiv3.annotation.GoalCreationCondition;
-import jadex.bdiv3.annotation.GoalRecurCondition;
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.Plans;
-import jadex.bdiv3.runtime.ChangeEvent;
+import jadex.bdiv3.annotation.Trigger;
 import jadex.bridge.service.annotation.Service;
 import jadex.extension.envsupport.environment.ISpaceObject;
 import jadex.extension.envsupport.environment.space2d.ContinuousSpace2D;
 import jadex.extension.envsupport.environment.space2d.Space2D;
-import jadex.extension.envsupport.math.Vector2Int;
 import jadex.micro.annotation.Agent;
 import jadex.micro.annotation.AgentBody;
 import forestfire.movement.EnvAccessInterface;
@@ -35,6 +31,14 @@ public class FiremanBDI implements EnvAccessInterface {
 		return movement;
 	}
 
+	@Belief
+	public double getHealth() {
+		return (double) myself.getProperty("health");
+	}
+	@Belief
+	public void setHealth(double health) {
+		myself.setProperty("health", health);
+	}
 	
 	@Belief
 	protected ContinuousSpace2D space = (ContinuousSpace2D) agent.getParentAccess()
@@ -47,20 +51,13 @@ public class FiremanBDI implements EnvAccessInterface {
 	protected int spaceHeight = space.getAreaSize().getXAsInteger();
 	protected int spaceWidth = space.getAreaSize().getYAsInteger();
 
-	@Belief
-	protected int currentX = 10;
-	@Belief
-	protected int currentY = 9;
 
-	@Belief
-	protected Vector2Int finalPos;
-
-	@Belief(updaterate = 200)
-	protected long currentTime = System.currentTimeMillis();
-
-	public long getCurrentTime() {
-		return currentTime;
+	@Plan(trigger=@Trigger(factchangeds="health"))
+	protected void printHealth()
+	{
+	  System.out.println("Ouch! Health at: " + getHealth());
 	}
+	
 
 	ISpaceObject[] terrain;
 
@@ -73,15 +70,12 @@ public class FiremanBDI implements EnvAccessInterface {
 		 * 
 		 * finalPos = new Vector2Int(currentX + 5, currentY);
 		 */
-		
+		System.out.println("Fireman " + myself.getId() + " running.");
 		agent.adoptPlan(new FiremanPlan());
-
-		System.out.println("Finished");
-
 	}
 
 	
-	
+	/*
 	@Goal(recur = true)
 	public class Explore {
 
@@ -111,7 +105,7 @@ public class FiremanBDI implements EnvAccessInterface {
 		}
 	}
 	
-	
+	*/
 	
 	
 	

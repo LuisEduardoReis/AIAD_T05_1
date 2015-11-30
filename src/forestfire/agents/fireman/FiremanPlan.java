@@ -28,12 +28,13 @@ public class FiremanPlan {
 		
 		Space2D space = fireman.getEnvironment();
 
-		while(true) {
+		while(fireman.getHealth() > 0) {
 			Move move = fireman.getMovement().new Move(new Vector2Double(
 					r.nextDouble()*space.getAreaSize().getXAsDouble(), 
 					r.nextDouble()*space.getAreaSize().getYAsDouble()));
 			mPlan.dispatchSubgoal(move).get();
 		}
+		System.out.println("Fireman " + fireman.getMyself().getId() + " finished.");
 	}
 	
 }

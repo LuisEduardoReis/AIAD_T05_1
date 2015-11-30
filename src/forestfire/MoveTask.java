@@ -45,7 +45,7 @@ public class MoveTask extends AbstractTask {
 		IVector2 newloc = dist <= maxdist ? destination : direction.multiply(
 				maxdist).add(loc);
 		((Space2D) space).setPosition(obj.getId(), newloc);
-		if (newloc == destination)
+		if (newloc == destination || ((double) obj.getProperty("health")) == 0)
 			setFinished(space, obj, true);
 	}
 
