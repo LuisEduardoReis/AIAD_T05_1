@@ -1,1 +1,8 @@
 /bin/
+
+.classpath
+.project
+.metadata
+.settings
+jcc.settings.xml
+SusanaVentura.settings.xml
