@@ -29,7 +29,7 @@ public class FiremanPlan {
 		Space2D space = fireman.getEnvironment();
 
 		while(fireman.getHealth() > 0) {
-			Move move = fireman.getMovement().new Move(new Vector2Double(
+			Move move = fireman.new FiremanMove(new Vector2Double(
 					r.nextDouble()*space.getAreaSize().getXAsDouble(), 
 					r.nextDouble()*space.getAreaSize().getYAsDouble()));
 			mPlan.dispatchSubgoal(move).get();

@@ -34,8 +34,9 @@
 
                 <env:objecttype name="fireman">
                 	<env:property name="position">new Vector2Double(0,0)</env:property>
-                    <env:property name="speed" class="double">5.0</env:property>
+                    <env:property name="speed" class="double">1.0</env:property>
                     <env:property name="health" class="double">100.0</env:property>
+                    <env:property name="viewRange" class="int">2</env:property>
                 </env:objecttype>
             </env:objecttypes>
 

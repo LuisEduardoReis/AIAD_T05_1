@@ -4,22 +4,31 @@ import jadex.bdiv3.BDIAgent;
 import jadex.bdiv3.annotation.Belief;
 import jadex.bdiv3.annotation.Body;
 import jadex.bdiv3.annotation.Capability;
+import jadex.bdiv3.annotation.Goal;
+import jadex.bdiv3.annotation.GoalDropCondition;
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.Plans;
+import jadex.bdiv3.annotation.RawEvent;
 import jadex.bdiv3.annotation.Trigger;
+import jadex.bdiv3.runtime.ChangeEvent;
 import jadex.bridge.service.annotation.Service;
 import jadex.extension.envsupport.environment.ISpaceObject;
 import jadex.extension.envsupport.environment.space2d.ContinuousSpace2D;
 import jadex.extension.envsupport.environment.space2d.Space2D;
+import jadex.extension.envsupport.math.IVector2;
+import jadex.extension.envsupport.math.Vector2Double;
 import jadex.micro.annotation.Agent;
 import jadex.micro.annotation.AgentBody;
 import forestfire.movement.EnvAccessInterface;
+import forestfire.movement.MoveToLocationPlan;
 import forestfire.movement.MovementCapability;
 
 @Agent
 @Service
-//@Plans({@Plan(trigger = @Trigger(goals = FiremanBDI.Explore.class), body = @Body(MoveToLocationPlan.class))})
-@Plans(@Plan(body=@Body(FiremanPlan.class)))
+@Plans({
+	@Plan(body=@Body(FiremanPlan.class)),
+	@Plan(trigger=@Trigger(goals={FiremanBDI.FiremanMove.class}), body=@Body(MoveToLocationPlan.class))
+})
 public class FiremanBDI implements EnvAccessInterface {
 	@Agent
 	protected BDIAgent agent;
@@ -30,15 +39,6 @@ public class FiremanBDI implements EnvAccessInterface {
 	public MovementCapability getMovement() {
 		return movement;
 	}
-
-	@Belief
-	public double getHealth() {
-		return (double) myself.getProperty("health");
-	}
-	@Belief
-	public void setHealth(double health) {
-		myself.setProperty("health", health);
-	}
 	
 	@Belief
 	protected ContinuousSpace2D space = (ContinuousSpace2D) agent.getParentAccess()
@@ -48,18 +48,74 @@ public class FiremanBDI implements EnvAccessInterface {
 	protected ISpaceObject myself = space.getAvatar(
 			agent.getComponentDescription(), agent.getModel().getFullName());
 
-	protected int spaceHeight = space.getAreaSize().getXAsInteger();
-	protected int spaceWidth = space.getAreaSize().getYAsInteger();
+	// Health
+	private double health;
+	@Belief
+	public double getHealth() {
+		health = (double) myself.getProperty("health");
+		return health;
+	}
+	@Belief
+	public void setHealth(double health) {
+		this.health = health;
+		myself.setProperty("health", health);
+	}
 
-
+	
 	@Plan(trigger=@Trigger(factchangeds="health"))
-	protected void printHealth()
+	protected void printHealthPlan(ChangeEvent e)
 	{
-	  System.out.println("Ouch! Health at: " + getHealth());
+	  System.out.println("Ouch! Health at: " + ((double) e.getValue()));
 	}
 	
+	// View of space
+	@Belief
+	protected int viewRange = (int) myself.getProperty("viewRange"); 
+	
+	protected ISpaceObject[] terrain = space.getSpaceObjectsByType("terrain");
+	protected int terrain_width = space.getAreaSize().getXAsInteger();
+	protected int terrain_height = space.getAreaSize().getYAsInteger();
+	
+	@Belief(updaterate=1000)
+	ISpaceObject[] terrain_view = getTerrainView();
+	
+	public ISpaceObject getTerrainView(int x, int y) {
+		return terrain_view[(y+viewRange)*(2*viewRange+1)+(x+viewRange)];
+	}
+	
+	protected ISpaceObject[] terrain_view_aux = null;
+	protected ISpaceObject[] getTerrainView() {		
+		if (terrain_view_aux == null) 
+			terrain_view_aux = new ISpaceObject[(2*viewRange+1)*(2*viewRange+1)];
+		
+		Vector2Double position = (Vector2Double) myself.getProperty("position");
+		int fx = position.getXAsInteger(), fy = position.getYAsInteger();
+		
+		for(int i = -viewRange; i <= viewRange; i++) {
+			for(int j = -viewRange; j <= viewRange; j++) {
+				int x = (fx + j + terrain_width)%terrain_width, 
+					y = (fy + i + terrain_height)%terrain_height;
+				terrain_view_aux[(i+viewRange)*(2*viewRange+1)+(j+viewRange)] = terrain[y*terrain_width + x];
+			}
+		}
+		
+		return terrain_view_aux;
+	}
+	
+	// Near fire belief
+	@Belief(updaterate=1000)
+	protected boolean nearFire = isNearFire();
+	
+	protected boolean isNearFire() {
+		for(int i = -viewRange; i <= viewRange; i++) {
+			for(int j = -viewRange; j <= viewRange; j++) {
+				ISpaceObject terrain = getTerrainView(j, i);
+				if ((float) terrain.getProperty("fire") >= 50f) return true;
+			}
+		}
+		return false;
+	}
 
-	ISpaceObject[] terrain;
 
 	@AgentBody
 	public void body() {
@@ -74,7 +130,25 @@ public class FiremanBDI implements EnvAccessInterface {
 		agent.adoptPlan(new FiremanPlan());
 	}
 
+	@Plan(trigger=@Trigger(factchangeds="nearFire"))
+	public void checkNearFire() {
+		if (nearFire)
+			System.out.println("Fireman " + myself.getId() + " got near fire!");
+	}
 	
+	@Goal
+	public class FiremanMove extends MovementCapability.Move {
+	
+		public FiremanMove(IVector2 destination) {
+			movement.super(destination);
+		}
+
+		@GoalDropCondition(rawevents={@RawEvent(ChangeEvent.FACTCHANGED)})
+		public boolean checkDrop() {
+			return nearFire;
+		}
+	
+	}
 	/*
 	@Goal(recur = true)
 	public class Explore {
