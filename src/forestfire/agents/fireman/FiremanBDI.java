@@ -17,6 +17,7 @@ import jadex.extension.envsupport.environment.space2d.ContinuousSpace2D;
 import jadex.extension.envsupport.environment.space2d.Space2D;
 import jadex.extension.envsupport.math.IVector2;
 import jadex.extension.envsupport.math.Vector2Double;
+import jadex.extension.envsupport.math.Vector2Int;
 import jadex.micro.annotation.Agent;
 import jadex.micro.annotation.AgentBody;
 import forestfire.movement.EnvAccessInterface;
@@ -70,7 +71,7 @@ public class FiremanBDI implements EnvAccessInterface {
 	
 	// View of space
 	@Belief
-	protected int viewRange = (int) myself.getProperty("viewRange"); 
+	public int viewRange = (int) myself.getProperty("viewRange"); 
 	
 	protected ISpaceObject[] terrain = space.getSpaceObjectsByType("terrain");
 	protected int terrain_width = space.getAreaSize().getXAsInteger();
@@ -78,6 +79,7 @@ public class FiremanBDI implements EnvAccessInterface {
 	
 	@Belief(updaterate=1000)
 	ISpaceObject[] terrain_view = getTerrainView();
+	public int terrain_view_pos_x, terrain_view_pos_y;
 	
 	public ISpaceObject getTerrainView(int x, int y) {
 		return terrain_view[(y+viewRange)*(2*viewRange+1)+(x+viewRange)];
@@ -90,6 +92,7 @@ public class FiremanBDI implements EnvAccessInterface {
 		
 		Vector2Double position = (Vector2Double) myself.getProperty("position");
 		int fx = position.getXAsInteger(), fy = position.getYAsInteger();
+		terrain_view_pos_x = fx; terrain_view_pos_y = fy;
 		
 		for(int i = -viewRange; i <= viewRange; i++) {
 			for(int j = -viewRange; j <= viewRange; j++) {
@@ -143,11 +146,10 @@ public class FiremanBDI implements EnvAccessInterface {
 			movement.super(destination);
 		}
 
-		@GoalDropCondition(rawevents={@RawEvent(ChangeEvent.FACTCHANGED)})
+/*		@GoalDropCondition(rawevents={@RawEvent(ChangeEvent.FACTCHANGED)})
 		public boolean checkDrop() {
 			return nearFire;
-		}
-	
+		}*/
 	}
 	/*
 	@Goal(recur = true)

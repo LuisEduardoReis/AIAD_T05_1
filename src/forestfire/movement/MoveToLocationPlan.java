@@ -43,7 +43,7 @@ public class MoveToLocationPlan {
 		
 		Map<Object, Object> props = new HashMap<Object, Object>();
 		props.put(MoveTask.PROPERTY_DESTINATION, dest);
-		//props.put(MoveTask.PROPERTY_SCOPE, capa.getCapability().getAgent().getExternalAccess());
+		props.put(MoveTask.PROPERTY_SCOPE, capa);
 		props.put(AbstractTask.PROPERTY_CONDITION, new PlanFinishedTaskCondition(rplan));
 		IEnvironmentSpace space = capa.getEnvironment();
 		
