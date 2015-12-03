@@ -5,10 +5,8 @@ import jadex.bdiv3.annotation.Belief;
 import jadex.bdiv3.annotation.Body;
 import jadex.bdiv3.annotation.Capability;
 import jadex.bdiv3.annotation.Goal;
-import jadex.bdiv3.annotation.GoalDropCondition;
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.Plans;
-import jadex.bdiv3.annotation.RawEvent;
 import jadex.bdiv3.annotation.Trigger;
 import jadex.bdiv3.runtime.ChangeEvent;
 import jadex.bridge.service.annotation.Service;
@@ -17,7 +15,6 @@ import jadex.extension.envsupport.environment.space2d.ContinuousSpace2D;
 import jadex.extension.envsupport.environment.space2d.Space2D;
 import jadex.extension.envsupport.math.IVector2;
 import jadex.extension.envsupport.math.Vector2Double;
-import jadex.extension.envsupport.math.Vector2Int;
 import jadex.micro.annotation.Agent;
 import jadex.micro.annotation.AgentBody;
 import forestfire.movement.EnvAccessInterface;
@@ -50,19 +47,15 @@ public class FiremanBDI implements EnvAccessInterface {
 			agent.getComponentDescription(), agent.getModel().getFullName());
 
 	// Health
-	private double health;
 	@Belief
 	public double getHealth() {
-		health = (double) myself.getProperty("health");
-		return health;
+		return (double) myself.getProperty("health");
 	}
 	@Belief
 	public void setHealth(double health) {
-		this.health = health;
 		myself.setProperty("health", health);
 	}
 
-	
 	@Plan(trigger=@Trigger(factchangeds="health"))
 	protected void printHealthPlan(ChangeEvent e)
 	{
@@ -71,13 +64,13 @@ public class FiremanBDI implements EnvAccessInterface {
 	
 	// View of space
 	@Belief
-	public int viewRange = (int) myself.getProperty("viewRange"); 
+	public final int viewRange = (int) myself.getProperty("viewRange"); 
 	
 	protected ISpaceObject[] terrain = space.getSpaceObjectsByType("terrain");
-	protected int terrain_width = space.getAreaSize().getXAsInteger();
-	protected int terrain_height = space.getAreaSize().getYAsInteger();
+	public final int terrain_width = space.getAreaSize().getXAsInteger();
+	public final int terrain_height = space.getAreaSize().getYAsInteger();
 	
-	@Belief(updaterate=1000)
+	@Belief(updaterate=200)
 	ISpaceObject[] terrain_view = getTerrainView();
 	public int terrain_view_pos_x, terrain_view_pos_y;
 	

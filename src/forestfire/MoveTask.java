@@ -46,27 +46,54 @@ public class MoveTask extends AbstractTask {
 		double speed = ((Number) obj.getProperty(PROPERTY_SPEED)).doubleValue();
 		FiremanBDI fireman = (FiremanBDI) getProperty(PROPERTY_SCOPE);	
 		
-		IVector2 direction = destination.copy().subtract(loc).normalize();
-		double dx = direction.getXAsDouble(), dy = direction.getYAsDouble();
+		// Get fastest way to get to destination
+		int width = fireman.terrain_width, height = fireman.terrain_height;
+		double loc_x = loc.getXAsDouble(), loc_y = loc.getYAsDouble();
+		double cart_dest_x = destination.getXAsDouble(), cart_dest_y = destination.getYAsDouble();
+		double dest_x = cart_dest_x, dest_y = cart_dest_y;
+		if (Math.abs(dest_x - loc_x) > Math.abs(cart_dest_x + width - loc_x)) dest_x = cart_dest_x + width;
+		if (Math.abs(dest_x - loc_x) > Math.abs(cart_dest_x - width - loc_x)) dest_x = cart_dest_x - width;
 		
-		int vr = fireman.viewRange, tvx = fireman.terrain_view_pos_x, tvy = fireman.terrain_view_pos_y;
-		double fx = loc.getXAsDouble(), fy = loc.getYAsDouble();
-		
-		for(int y = -vr; y<=vr; y++) {
-		for(int x = -vr; x<=vr; x++) {
-			ISpaceObject terrain = fireman.getTerrainView(x, y);
-			double vx = (tvx + x) - fx, vy = tvy + y - fy, d = Math.sqrt(vx*vx + vy*vy);
-			if (((float) terrain.getProperty("fire")) > 50f && d <= 2) {
-				dx -= vx; dy -= vy;
-			}
-		}}
-		direction = new Vector2Double(dx, dy);//.normalize(); 
-		double dist = ((Space2D) space).getDistance(loc, destination).getAsDouble();
+		if (Math.abs(dest_y - loc_y) > Math.abs(cart_dest_y + height - loc_y)) dest_y = cart_dest_y + height;
+		if (Math.abs(dest_y - loc_y) > Math.abs(cart_dest_y - height - loc_y)) dest_y = cart_dest_y - height;		
 		
 		
-		double maxdist = progress * speed *0.001;
-		IVector2 newloc = dist <= maxdist ? destination : direction.multiply(
-				maxdist).add(loc);
+		double dist = Util.pointDistance(loc_x, loc_y, dest_x, dest_y);
+		double maxdist = progress * speed * 0.001;
+		
+		IVector2 newloc;
+		
+		if (dist <= maxdist) 
+			// Got to destination
+			newloc = destination;
+		else { 
+			// Calculate where to go
+			double 	dir_x = (dest_x - loc_x)/dist, 
+					dir_y = (dest_y - loc_y)/dist;
+			
+			int vr = fireman.viewRange, tv_x = fireman.terrain_view_pos_x, tv_y = fireman.terrain_view_pos_y;
+			
+			// Avoid fire (each fire in range applies a force on the fireman)
+			for(int y = -vr; y<=vr; y++) {
+				for(int x = -vr; x<=vr; x++) {
+					ISpaceObject terrain = fireman.getTerrainView(x, y);
+					if (((float) terrain.getProperty("fire")) < 50f) continue;
+					
+					double vx = tv_x + x - loc_x, 
+						   vy = tv_y + y - loc_y,
+						   d = Util.vectorLength(vx, vy);
+					if (d < 2) {
+						dir_x -= vx/d; 
+						dir_y -= vy/d;
+					}
+				}
+			}		
+			
+			double d = Util.vectorLength(dir_x, dir_y);
+			newloc = new Vector2Double(
+					(loc_x + maxdist*(dir_x/d)) % fireman.terrain_width,
+					(loc_y + maxdist*(dir_y/d)) % fireman.terrain_height);
+		}
 		((Space2D) space).setPosition(obj.getId(), newloc);
 		
 		if (newloc == destination || ((double) obj.getProperty("health")) == 0)
