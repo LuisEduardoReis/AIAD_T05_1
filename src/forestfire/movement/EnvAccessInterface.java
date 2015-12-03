@@ -5,6 +5,7 @@ import jadex.extension.envsupport.environment.space2d.Space2D;
 
 public interface EnvAccessInterface {
 
+	public Object getAgent();
 	
 	public Space2D getEnvironment();
 	

@@ -1,38 +1,40 @@
 package forestfire.agents.fireman;
 
+import forestfire.movement.EnvAccessInterface;
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.PlanAPI;
 import jadex.bdiv3.annotation.PlanBody;
 import jadex.bdiv3.annotation.PlanCapability;
 import jadex.bdiv3.runtime.IPlan;
-import jadex.extension.envsupport.environment.space2d.Space2D;
-import jadex.extension.envsupport.math.Vector2Double;
-
-import java.util.Random;
-
-import forestfire.movement.MovementCapability.Move;
 
 
 @Plan
 public class FiremanPlan {
 
 	@PlanCapability
-	FiremanBDI fireman;
+	EnvAccessInterface capa;
 	
 	@PlanAPI
 	protected IPlan mPlan;
 	
 	@PlanBody
 	protected void body() {
-		Random r = new Random();
-		
-		Space2D space = fireman.getEnvironment();
 
+		FiremanBDI fireman = (FiremanBDI) capa.getAgent();
+		
 		while(fireman.getHealth() > 0) {
-			Move move = fireman.new FiremanMove(new Vector2Double(
-					r.nextDouble()*space.getAreaSize().getXAsDouble(), 
-					r.nextDouble()*space.getAreaSize().getYAsDouble()));
-			mPlan.dispatchSubgoal(move).get();
+			if (fireman.inDanger) {
+				// Go to safety
+				mPlan.dispatchSubgoal(fireman.new RunFromFire()).get();
+			} else if (fireman.fireInRange) {
+				// Fight fire
+				// TODO
+				mPlan.waitFor(1000).get();
+			} else {
+				// Look for fire
+				mPlan.waitFor(1000).get();
+				//mPlan.dispatchSubgoal(fireman.new LookForFire()).get();
+			}
 		}
 		System.out.println("Fireman " + fireman.getMyself().getId() + " finished.");
 	}

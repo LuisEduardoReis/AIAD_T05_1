@@ -36,6 +36,11 @@ public class MovementCapability implements EnvAccessInterface {
 			.getFullName());
 
 	@Override
+	public Object getAgent() {
+		return capability.getAgent();
+	}
+	
+	@Override
 	public Space2D getEnvironment() {
 		return env;
 	}

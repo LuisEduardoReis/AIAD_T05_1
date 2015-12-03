@@ -1,9 +1,5 @@
 package forestfire.movement;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import forestfire.MoveTask;
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.PlanAPI;
 import jadex.bdiv3.annotation.PlanBody;
@@ -17,6 +13,11 @@ import jadex.extension.envsupport.environment.AbstractTask;
 import jadex.extension.envsupport.environment.IEnvironmentSpace;
 import jadex.extension.envsupport.environment.ISpaceObject;
 import jadex.extension.envsupport.math.IVector2;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import forestfire.MoveTask;
 
 @Plan
 public class MoveToLocationPlan {
@@ -43,7 +44,7 @@ public class MoveToLocationPlan {
 		
 		Map<Object, Object> props = new HashMap<Object, Object>();
 		props.put(MoveTask.PROPERTY_DESTINATION, dest);
-		props.put(MoveTask.PROPERTY_SCOPE, capa);
+		props.put(MoveTask.PROPERTY_SCOPE, capa.getAgent());
 		props.put(AbstractTask.PROPERTY_CONDITION, new PlanFinishedTaskCondition(rplan));
 		IEnvironmentSpace space = capa.getEnvironment();
 		
@@ -52,7 +53,6 @@ public class MoveToLocationPlan {
 		Object mtaskid = space.createObjectTask(MoveTask.PROPERTY_TYPENAME, props, myself.getId());
 		space.addTaskListener(mtaskid, myself.getId(), lis);
 		fut.get();
-
 	}
 	
 	
