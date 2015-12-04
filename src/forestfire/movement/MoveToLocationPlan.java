@@ -44,6 +44,7 @@ public class MoveToLocationPlan {
 		ISpaceObject myself	= fireman.getMyself();
 		IVector2 dest = goal.getDestination();
 		
+		
 		Map<Object, Object> props = new HashMap<Object, Object>();
 		props.put(MoveTask.PROPERTY_DESTINATION, dest);
 		props.put(MoveTask.PROPERTY_SCOPE, fireman);

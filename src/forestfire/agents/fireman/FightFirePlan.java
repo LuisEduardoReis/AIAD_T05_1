@@ -6,14 +6,10 @@ import jadex.bdiv3.annotation.PlanBody;
 import jadex.bdiv3.annotation.PlanCapability;
 import jadex.bdiv3.annotation.PlanReason;
 import jadex.bdiv3.runtime.IPlan;
-import jadex.extension.envsupport.math.Vector2Double;
-
-import java.util.Random;
-
-import forestfire.agents.fireman.FiremanBDI.LookForFire;
+import forestfire.agents.fireman.FiremanBDI.FightFire;
 
 @Plan
-public class LookForFirePlan {
+public class FightFirePlan {
 
 	//-------- attributes --------
 
@@ -24,21 +20,17 @@ public class LookForFirePlan {
 	protected IPlan plan;
 	
 	@PlanReason
-	protected LookForFire goal;
+	protected FightFire goal;
 	
 	/**
 	 *  The plan body.
 	 */
 	@PlanBody
 	public void body()
-	{
-		Random r = new Random();
-		
+	{		
 		while(fireman.health > 0) {
-			Vector2Double dest = new Vector2Double(
-					r.nextDouble() * fireman.terrain_width, 
-					r.nextDouble() * fireman.terrain_height);
-			plan.dispatchSubgoal(new FiremanBDI.Move(dest)).get();
+			// TODO Dispatch fight fire task or fight fire subgoal
+			plan.waitFor(1000).get();
 		}
 	}
 	

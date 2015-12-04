@@ -3,15 +3,16 @@ package forestfire.agents.fireman;
 import jadex.bdiv3.BDIAgent;
 import jadex.bdiv3.annotation.Belief;
 import jadex.bdiv3.annotation.Body;
+import jadex.bdiv3.annotation.Deliberation;
 import jadex.bdiv3.annotation.Goal;
+import jadex.bdiv3.annotation.Goal.ExcludeMode;
+import jadex.bdiv3.annotation.GoalCreationCondition;
 import jadex.bdiv3.annotation.GoalDropCondition;
+import jadex.bdiv3.annotation.GoalMaintainCondition;
 import jadex.bdiv3.annotation.GoalTargetCondition;
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.Plans;
-import jadex.bdiv3.annotation.RawEvent;
 import jadex.bdiv3.annotation.Trigger;
-import jadex.bdiv3.annotation.Goal.ExcludeMode;
-import jadex.bdiv3.runtime.ChangeEvent;
 import jadex.bridge.service.RequiredServiceInfo;
 import jadex.bridge.service.annotation.Service;
 import jadex.bridge.service.types.clock.IClockService;
@@ -34,9 +35,9 @@ import forestfire.movement.MoveToLocationPlan;
 @Agent
 @Service
 @Plans({
-	@Plan(body = @Body(FiremanPlan.class)),
-	@Plan(trigger = @Trigger(goals = { FiremanBDI.LookForFire.class }), body = @Body(LookForFirePlan.class)), 
-	@Plan(trigger = @Trigger(goals = { FiremanBDI.Move.class }), body = @Body(MoveToLocationPlan.class))
+	@Plan(trigger = @Trigger(goals = { FiremanBDI.LookForFire.class }), body = @Body(LookForFirePlan.class)),
+	@Plan(trigger = @Trigger(goals = { FiremanBDI.FightFire.class }), body = @Body(FightFirePlan.class)),
+	@Plan(trigger = @Trigger(goals = { FiremanBDI.Move.class, FiremanBDI.RunFromFire.class }), body = @Body(MoveToLocationPlan.class))
 })
 @RequiredServices(@RequiredService(name="clockser", type=IClockService.class, binding=@Binding(scope=RequiredServiceInfo.SCOPE_PLATFORM)))
 public class FiremanBDI {
@@ -52,20 +53,9 @@ public class FiremanBDI {
 			agent.getComponentDescription(), agent.getModel().getFullName());
 
 	// Health
-	@Belief
-	public double getHealth() {
-		return (double) myself.getProperty("health");
-	}
+	@Belief(updaterate=200)
+	protected double health = (double) myself.getProperty("health");
 
-	@Belief
-	public void setHealth(double health) {
-		myself.setProperty("health", health);
-	}
-
-	/*@Plan(trigger = @Trigger(factchangeds = "health"))
-	protected void printHealthPlan(ChangeEvent e) {
-		System.out.println("Ouch! Health at: " + ((double) e.getValue()));
-	}*/
 
 	// View of space
 	@Belief
@@ -108,8 +98,9 @@ public class FiremanBDI {
 		return terrain_view_aux;
 	}
 
+	
 	// In Danger belief
-	@Belief(updaterate = 1000)
+	@Belief(updaterate = 200)
 	protected boolean inDanger = isInDanger();
 
 	protected boolean isInDanger() {
@@ -129,7 +120,7 @@ public class FiremanBDI {
 	}
 
 	// Fire in Range belief
-	@Belief(updaterate = 1000)
+	@Belief(updaterate = 200)
 	protected boolean fireInRange = isFireInRange();
 
 	protected boolean isFireInRange() {		
@@ -152,7 +143,9 @@ public class FiremanBDI {
 		));
 
 		System.out.println("Fireman " + myself.getId() + " running.");
-		agent.adoptPlan(new FiremanPlan());
+		
+		agent.dispatchTopLevelGoal(new LookForFire());
+		agent.dispatchTopLevelGoal(new RunFromFire());
 	}
 
 	@Plan(trigger = @Trigger(factchangeds = "inDanger"))
@@ -165,16 +158,47 @@ public class FiremanBDI {
 		if (fireInRange) System.out.println("Fireman " + myself.getId() + " has fire in range");
 	}
 	
-	@Goal
-	public class LookForFire {}
+	@Goal(succeedonpassed = false, excludemode=ExcludeMode.Never)
+	public static class LookForFire {}
 	
-	@Goal
-	public class RunFromFire extends Move {
-		public RunFromFire() { super(null); }
+	@Goal(deliberation=@Deliberation(inhibits=LookForFire.class, cardinalityone=true))
+	public static class FightFire {
+		
+		@GoalCreationCondition(beliefs="fireInRange")
+		public static boolean checkCreate(FiremanBDI fireman) {
+			return fireman.fireInRange;
+		}
+		
+		@GoalDropCondition(beliefs="fireInRange")
+		public static boolean checkDrop(FiremanBDI fireman) {
+			return !fireman.fireInRange;
+		}
+	}
+	
+	@Goal(excludemode=ExcludeMode.Never, deliberation=@Deliberation(inhibits={FightFire.class, LookForFire.class}, cardinalityone=true))
+	public static class RunFromFire extends Move {		
+		public RunFromFire() { 
+			super(null);
+		}
+
+		@GoalMaintainCondition(beliefs = "inDanger")
+		protected boolean maintain(FiremanBDI fireman) {
+			return !fireman.inDanger;
+		}
+
+		@GoalTargetCondition(beliefs = "inDanger")
+		protected boolean target(FiremanBDI fireman) {
+			return !fireman.inDanger;
+		}
+		
+		@GoalDropCondition(beliefs="health")
+		public static boolean checkDrop(FiremanBDI fireman) {
+			return fireman.health <= 0;
+		}
 	}
 	
 	@Goal
-	public class Move {
+	public static class Move {
 		protected IVector2 destination;
 	
 		public Move(IVector2 destination) {
