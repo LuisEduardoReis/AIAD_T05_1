@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import forestfire.MoveTask;
+import forestfire.agents.fireman.FiremanBDI;
+import forestfire.agents.fireman.FiremanBDI.Move;
 
 @Plan
 public class MoveToLocationPlan {
@@ -25,13 +27,13 @@ public class MoveToLocationPlan {
 	//-------- attributes --------
 
 	@PlanCapability
-	protected EnvAccessInterface capa;
+	protected FiremanBDI fireman;
 	
 	@PlanAPI
 	protected IPlan rplan;
 	
 	@PlanReason
-	protected DestinationInterface goal;
+	protected Move goal;
 	
 	/**
 	 *  The plan body.
@@ -39,14 +41,14 @@ public class MoveToLocationPlan {
 	@PlanBody
 	public void body()
 	{
-		ISpaceObject myself	= capa.getMyself();
+		ISpaceObject myself	= fireman.getMyself();
 		IVector2 dest = goal.getDestination();
 		
 		Map<Object, Object> props = new HashMap<Object, Object>();
 		props.put(MoveTask.PROPERTY_DESTINATION, dest);
-		props.put(MoveTask.PROPERTY_SCOPE, capa.getAgent());
+		props.put(MoveTask.PROPERTY_SCOPE, fireman);
 		props.put(AbstractTask.PROPERTY_CONDITION, new PlanFinishedTaskCondition(rplan));
-		IEnvironmentSpace space = capa.getEnvironment();
+		IEnvironmentSpace space = fireman.getEnvironment();
 		
 		Future<Void> fut = new Future<Void>();
 		DelegationResultListener<Void> lis = new DelegationResultListener<Void>(fut, true);

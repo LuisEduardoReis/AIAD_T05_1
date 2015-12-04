@@ -47,7 +47,7 @@
             <env:processtypes>
                 <env:processtype name="create_forest" class="ForestProcess"/>
                 <env:processtype name="spread_fire" class="FireProcess">
-                	<env:property name="tickrate">15</env:property>
+                	<env:property name="tickrate">1</env:property>
                 </env:processtype>
             </env:processtypes>
 

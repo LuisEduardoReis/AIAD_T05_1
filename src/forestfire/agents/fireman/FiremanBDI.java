@@ -3,47 +3,45 @@ package forestfire.agents.fireman;
 import jadex.bdiv3.BDIAgent;
 import jadex.bdiv3.annotation.Belief;
 import jadex.bdiv3.annotation.Body;
-import jadex.bdiv3.annotation.Capability;
 import jadex.bdiv3.annotation.Goal;
 import jadex.bdiv3.annotation.GoalDropCondition;
+import jadex.bdiv3.annotation.GoalTargetCondition;
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.Plans;
 import jadex.bdiv3.annotation.RawEvent;
 import jadex.bdiv3.annotation.Trigger;
+import jadex.bdiv3.annotation.Goal.ExcludeMode;
 import jadex.bdiv3.runtime.ChangeEvent;
+import jadex.bridge.service.RequiredServiceInfo;
 import jadex.bridge.service.annotation.Service;
+import jadex.bridge.service.types.clock.IClockService;
 import jadex.extension.envsupport.environment.ISpaceObject;
 import jadex.extension.envsupport.environment.space2d.ContinuousSpace2D;
 import jadex.extension.envsupport.environment.space2d.Space2D;
+import jadex.extension.envsupport.math.IVector2;
 import jadex.extension.envsupport.math.Vector2Double;
 import jadex.micro.annotation.Agent;
 import jadex.micro.annotation.AgentBody;
+import jadex.micro.annotation.Binding;
+import jadex.micro.annotation.RequiredService;
+import jadex.micro.annotation.RequiredServices;
 
 import java.util.Random;
 
 import forestfire.Util;
-import forestfire.movement.EnvAccessInterface;
 import forestfire.movement.MoveToLocationPlan;
-import forestfire.movement.MovementCapability;
-import forestfire.movement.MovementCapability.Move;
 
 @Agent
 @Service
 @Plans({
 	@Plan(body = @Body(FiremanPlan.class)),
 	@Plan(trigger = @Trigger(goals = { FiremanBDI.LookForFire.class }), body = @Body(LookForFirePlan.class)), 
-	@Plan(trigger = @Trigger(goals = { FiremanBDI.RunFromFire.class }), body = @Body(MoveToLocationPlan.class))
+	@Plan(trigger = @Trigger(goals = { FiremanBDI.Move.class }), body = @Body(MoveToLocationPlan.class))
 })
-public class FiremanBDI implements EnvAccessInterface{
+@RequiredServices(@RequiredService(name="clockser", type=IClockService.class, binding=@Binding(scope=RequiredServiceInfo.SCOPE_PLATFORM)))
+public class FiremanBDI {
 	@Agent
 	protected BDIAgent agent;
-
-	@Capability
-	MovementCapability movement = new MovementCapability();
-
-	public MovementCapability getMovement() {
-		return movement;
-	}
 
 	@Belief
 	protected ContinuousSpace2D space = (ContinuousSpace2D) agent
@@ -168,97 +166,31 @@ public class FiremanBDI implements EnvAccessInterface{
 	}
 	
 	@Goal
-	public class LookForFire {
-		
-		@GoalDropCondition(rawevents = { @RawEvent(ChangeEvent.FACTCHANGED) })
-		public boolean checkDrop() {
-			return fireInRange;
-		}
-	}
+	public class LookForFire {}
 	
 	@Goal
 	public class RunFromFire extends Move {
-		
-		public RunFromFire() {
-			movement.super(null);
+		public RunFromFire() { super(null); }
+	}
+	
+	@Goal
+	public class Move {
+		protected IVector2 destination;
+	
+		public Move(IVector2 destination) {
+			this.destination = destination;
+		}
+
+		public IVector2 getDestination() {
+			return destination;
 		}
 	}
 
-	/*
-	 * @Goal(recur = true) public class Explore {
-	 * 
-	 * @GoalCreationCondition(beliefs = "finalPos") public Explore() { }
-	 * 
-	 * @GoalRecurCondition(beliefs = "currentTime") public boolean
-	 * checkRecur(ChangeEvent event) { System.out.println("Keeping goal at " +
-	 * (long) event.getValue()); return true; } }
-	 * 
-	 * 
-	 * @Goal(recur = true) public class MoveTo {
-	 * 
-	 * @GoalCreationCondition(beliefs = "finalPos") public MoveTo() { }
-	 * 
-	 * @GoalRecurCondition(beliefs = "currentTime") public boolean
-	 * checkRecur(ChangeEvent event) { System.out.println("Keeping goal at " +
-	 * (long) event.getValue()); return true; } }
-	 */
-
-	/*
-	 * @Plan(trigger = @Trigger(goals = MoveTo.class)) public class
-	 * MovingToPositionPlan {
-	 * 
-	 * @PlanBody protected void failingPlan() {
-	 * 
-	 * 
-	 * System.out.println("Attempt at " + getCurrentTime()); if (agent.currentX
-	 * != agent.finalPos.getXAsInteger() || agent.currentY !=
-	 * agent.finalPos.getYAsInteger()) {
-	 * 
-	 * System.out.println("moving to x=" + finalPos.getXAsInteger() + ", y=" +
-	 * finalPos.getYAsInteger());
-	 * 
-	 * if (finalPos.getXAsInteger() > currentX) { myself.setProperty("position",
-	 * new Vector2Int(currentX + 1, currentY)); currentX += 1; }
-	 * 
-	 * if (finalPos.getXAsInteger() < currentX) { myself.setProperty("position",
-	 * new Vector2Int(currentX - 1, currentY)); currentX -= 1; }
-	 * 
-	 * if (finalPos.getYAsInteger() > currentY) { myself.setProperty("position",
-	 * new Vector2Int(currentX, currentY + 1)); currentY += 1; }
-	 * 
-	 * if (finalPos.getYAsInteger() < currentY) { myself.setProperty("position",
-	 * new Vector2Int(currentX, currentY - 1)); currentY -= 1; }
-	 * 
-	 * throw new PlanFailureException();
-	 * 
-	 * } }
-	 * 
-	 * @PlanPassed public void passed() {
-	 * System.out.println("Plan finished successfully at " + getCurrentTime());
-	 * 
-	 * System.out.println("changing plan");
-	 * 
-	 * Random r = new Random(); finalPos = new Vector2Int(r.nextInt(spaceWidth),
-	 * r.nextInt(spaceHeight));
-	 * 
-	 * }
-	 * 
-	 * 
-	 * 
-	 * }
-	 */
 	
-	@Override
-	public Object getAgent() {
-		return this;
-	}
-	
-	@Override
 	public Space2D getEnvironment() {
 		return space;
 	}
-	
-	@Override
+
 	public ISpaceObject getMyself() {
 		return myself;
 	}

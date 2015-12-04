@@ -34,11 +34,11 @@ public class LookForFirePlan {
 	{
 		Random r = new Random();
 		
-		while(true) {
+		while(fireman.getHealth() > 0) {
 			Vector2Double dest = new Vector2Double(
 					r.nextDouble() * fireman.terrain_width, 
 					r.nextDouble() * fireman.terrain_height);
-			plan.dispatchSubgoal(fireman.getMovement().new Move(dest)).get();
+			plan.dispatchSubgoal(fireman.new Move(dest)).get();
 		}
 	}
 	
