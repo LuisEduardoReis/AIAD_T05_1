@@ -36,10 +36,12 @@ import forestfire.movement.MoveToLocationPlan;
 @Plans({
 	@Plan(trigger = @Trigger(goals = { FiremanBDI.LookForFire.class }), body = @Body(LookForFirePlan.class)),
 	@Plan(trigger = @Trigger(goals = { FiremanBDI.FightFire.class }), body = @Body(FightFirePlan.class)),
-	@Plan(trigger = @Trigger(goals = { FiremanBDI.Move.class, FiremanBDI.RunFromFire.class }), body = @Body(MoveToLocationPlan.class))
+	@Plan(trigger = @Trigger(goals = { FiremanBDI.Move.class, FiremanBDI.RunFromFire.class, FiremanBDI.ApproachFire.class }), body = @Body(MoveToLocationPlan.class))
 })
 @RequiredServices(@RequiredService(name="clockser", type=IClockService.class, binding=@Binding(scope=RequiredServiceInfo.SCOPE_PLATFORM)))
 public class FiremanBDI {
+	public static final double SAFETY_RANGE = 2;
+
 	@Agent
 	protected BDIAgent agent;
 
@@ -65,17 +67,21 @@ public class FiremanBDI {
 	@Belief
 	protected double health;
 
+	// Distance to fire
+	@Belief
+	protected double distanceToFire = Double.MAX_VALUE; 
+	
 	// In Danger belief
-	@Belief
-	protected boolean inDanger;
-
-	// Fire in View belief
-	@Belief
-	protected boolean fireInView;
+	@Belief(dynamic=true)
+	protected boolean inDanger = distanceToFire < SAFETY_RANGE;
 	
 	// Fire in Range belief
-	@Belief
-	protected boolean fireInRange;
+	@Belief(dynamic=true)
+	protected boolean fireInRange = distanceToFire < actionRange;
+	
+	// Fire in View belief
+	@Belief(dynamic=true)
+	protected boolean fireInView = distanceToFire != Double.MAX_VALUE;
 	
 
 	// View of space
@@ -86,14 +92,10 @@ public class FiremanBDI {
 
 	protected TerrainView updateTerrainView() {
 		terrain_view_aux.updateView();
-		double dist = terrain_view_aux.distanceToNearestFire();
 		
 		// Update Beliefs based on view
 		health = (double) myself.getProperty("health");
-		
-		inDanger = dist < 2;
-		fireInRange = dist < actionRange;
-		fireInView = dist != Double.MAX_VALUE;		
+		distanceToFire = terrain_view_aux.distanceToNearestFire();
 		
 		return terrain_view_aux;
 	}
@@ -135,15 +137,43 @@ public class FiremanBDI {
 	
 	// Look for fire, default goal
 	@Goal
-	public static class LookForFire {}
+	public static class LookForFire {
+		// By default look for fire
+	}
+	
+	// Approach fire
+	@Goal(deliberation=@Deliberation(inhibits={LookForFire.class}, cardinalityone=true))
+	public static class ApproachFire extends Move {
+
+		public ApproachFire(double actionDistance) {
+			super(null);
+			this.approach_dist = actionDistance;
+			//System.out.println("Goal Approach Fire");
+		}
+		
+		// Approach fire when it enters view 
+		@GoalCreationCondition(beliefs="fireInView")
+		public static ApproachFire checkCreate(FiremanBDI fireman) {
+			if (fireman.fireInView)
+				return new ApproachFire(fireman.actionRange);
+			else
+				return null;
+		}
+		
+		// Stop when fire is no longer in view
+		@GoalDropCondition(beliefs="fireInView")
+		public static boolean checkDrop(FiremanBDI fireman) {
+			return !fireman.fireInView;
+		}
+		
+	}
 	
 	// Fight fire, triggered when there is fire in range
-	@Goal(deliberation=@Deliberation(inhibits=LookForFire.class, cardinalityone=true))
+	@Goal(deliberation=@Deliberation(inhibits={LookForFire.class, ApproachFire.class}, cardinalityone=true))
 	public static class FightFire {
-		
 		public FightFire() {
-			System.out.println("Created FightFire");
-		}
+			// System.out.println("Goal Fight Fire");
+		}		
 		
 		@GoalCreationCondition(beliefs="fireInRange")
 		public static boolean checkCreate(FiremanBDI fireman) {
@@ -156,10 +186,12 @@ public class FiremanBDI {
 		}
 	}
 	
-	@Goal(excludemode=ExcludeMode.Never, deliberation=@Deliberation(inhibits={FightFire.class, LookForFire.class}, cardinalityone=true))
+	// Run from fire, triggered when fireman is in danger
+	@Goal(excludemode=ExcludeMode.Never, deliberation=@Deliberation(inhibits={FightFire.class, LookForFire.class, ApproachFire.class}, cardinalityone=true))
 	public static class RunFromFire extends Move {		
 		public RunFromFire() { 
 			super(null);
+			// System.out.println("Goal Fight Fire");
 		}
 
 		@GoalMaintainCondition(beliefs = "inDanger")
@@ -181,13 +213,24 @@ public class FiremanBDI {
 	@Goal
 	public static class Move {
 		protected IVector2 destination;
+		protected double retreat_dist, approach_dist;
 	
 		public Move(IVector2 destination) {
 			this.destination = destination;
+			this.retreat_dist = FiremanBDI.SAFETY_RANGE;
+			this.approach_dist = -1;
 		}
 
 		public IVector2 getDestination() {
 			return destination;
+		}
+
+		public double getRetreatDist() {
+			return retreat_dist;
+		}
+		
+		public double getApproachDist() {
+			return approach_dist;
 		}
 	}
 
@@ -202,6 +245,10 @@ public class FiremanBDI {
 
 	public TerrainView getTerrain_view() {
 		return terrain_view;
+	}
+
+	public double getDistanceToFire() {
+		return distanceToFire;
 	}
 
 }

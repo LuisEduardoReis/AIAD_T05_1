@@ -34,10 +34,10 @@
 
                 <env:objecttype name="fireman">
                 	<env:property name="position">new Vector2Double(0,0)</env:property>
-                    <env:property name="speed" class="double">1.0</env:property>
-                    <env:property name="health" class="double">100.0</env:property>
-                    <env:property name="viewRange" class="int">4</env:property>
-                    <env:property name="actionRange" class="double">3.0</env:property>
+                    <env:property name="speed" class="double"> 1.0 </env:property>
+                    <env:property name="health" class="double"> 100.0 </env:property>
+                    <env:property name="viewRange" class="int"> 8 </env:property>
+                    <env:property name="actionRange" class="double"> 3.0 </env:property>
                 </env:objecttype>
             </env:objecttypes>
 
@@ -148,6 +148,8 @@
                 <component type="Fireman"/>
                 <component type="Fireman"/>
                 <component type="Fireman"/>
+                <component type="Fireman"/>
+                <component type="Fireman"/>                
             </components>
 
         </configuration>

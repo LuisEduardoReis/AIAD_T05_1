@@ -37,10 +37,16 @@ public class TerrainView {
 			for (int j = -viewRange; j <= viewRange; j++) {
 				int x = (pos_x + j + terrain_width) % terrain_width, 
 					y = (pos_y + i + terrain_height)% terrain_height;
-				
+				/*float fire = (float) terrain[y * terrain_width + x].getProperty("fire");
+				if (fire > 50)
+					System.out.print("x ");
+				else
+					System.out.print("  ");*/
 				set(j,i, terrain[y * terrain_width + x]);
 			}
+			//System.out.println();
 		}
+		//System.out.println();
 	}
 	
 	public ISpaceObject get(int x, int y) {

@@ -49,6 +49,9 @@ public class MoveToLocationPlan {
 		props.put(MoveTask.PROPERTY_DESTINATION, dest);
 		props.put(MoveTask.PROPERTY_SCOPE, fireman);
 		props.put(AbstractTask.PROPERTY_CONDITION, new PlanFinishedTaskCondition(rplan));
+		props.put(MoveTask.PROPERTY_RETREAT_DIST, goal.getRetreatDist());
+		props.put(MoveTask.PROPERTY_APPROACH_DIST, goal.getApproachDist());
+		
 		
 		IEnvironmentSpace space = fireman.getEnvironment();
 		
