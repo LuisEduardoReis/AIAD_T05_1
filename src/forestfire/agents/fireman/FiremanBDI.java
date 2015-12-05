@@ -14,7 +14,6 @@ import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.Plans;
 import jadex.bdiv3.annotation.Trigger;
 import jadex.bridge.service.RequiredServiceInfo;
-import jadex.bridge.service.annotation.Service;
 import jadex.bridge.service.types.clock.IClockService;
 import jadex.extension.envsupport.environment.ISpaceObject;
 import jadex.extension.envsupport.environment.space2d.ContinuousSpace2D;
@@ -29,16 +28,19 @@ import jadex.micro.annotation.RequiredServices;
 
 import java.util.Random;
 
+import forestfire.agents.commander.IReportTerrainViewService;
 import forestfire.movement.MoveToLocationPlan;
 
 @Agent
-@Service
 @Plans({
 	@Plan(trigger = @Trigger(goals = { FiremanBDI.LookForFire.class }), body = @Body(LookForFirePlan.class)),
 	@Plan(trigger = @Trigger(goals = { FiremanBDI.FightFire.class }), body = @Body(FightFirePlan.class)),
 	@Plan(trigger = @Trigger(goals = { FiremanBDI.Move.class, FiremanBDI.RunFromFire.class, FiremanBDI.ApproachFire.class }), body = @Body(MoveToLocationPlan.class))
 })
-@RequiredServices(@RequiredService(name="clockser", type=IClockService.class, binding=@Binding(scope=RequiredServiceInfo.SCOPE_PLATFORM)))
+@RequiredServices({
+	@RequiredService(name="clockser", type=IClockService.class, binding=@Binding(scope=RequiredServiceInfo.SCOPE_PLATFORM)),
+	@RequiredService(name="reportviewservice", type=IReportTerrainViewService.class, multiple=true, binding=@Binding(dynamic=true, scope=Binding.SCOPE_PLATFORM))
+})
 public class FiremanBDI {
 	public static final double SAFETY_RANGE = 2;
 
@@ -89,21 +91,29 @@ public class FiremanBDI {
 	
 	@Belief(updaterate = 200)
 	protected TerrainView terrain_view = updateTerrainView();
-
-	protected TerrainView updateTerrainView() {
+	
+	protected TerrainView updateTerrainView() {		
 		terrain_view_aux.updateView();
 		
 		// Update Beliefs based on view
 		health = (double) myself.getProperty("health");
 		distanceToFire = terrain_view_aux.distanceToNearestFire();
 		
+		// Report view
+		if (report_service != null) report_service.reportTerrainView(this, terrain_view);
+		
 		return terrain_view_aux;
 	}
 	
 	// #### AGENT BODY ####
-
+	
+	protected IReportTerrainViewService report_service;
+	
 	@AgentBody
 	public void body() {
+
+		report_service = (IReportTerrainViewService) agent.getServiceContainer().getRequiredService("reportviewservice").get();
+		
 		Random r = new Random();
 		myself.setProperty("position", new Vector2Double(
 				r.nextDouble() * space.getAreaSize().getXAsDouble(), 
@@ -250,5 +260,6 @@ public class FiremanBDI {
 	public double getDistanceToFire() {
 		return distanceToFire;
 	}
+
 
 }

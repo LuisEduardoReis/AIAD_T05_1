@@ -122,6 +122,7 @@
 
     <componenttypes>
         <componenttype name="Fireman" filename="agents\fireman\FiremanBDI.class"/>
+        <componenttype name="Commander" filename="agents\commander\CommanderBDI.class"/>
     </componenttypes>
 
     <configurations>
@@ -150,6 +151,8 @@
                 <component type="Fireman"/>
                 <component type="Fireman"/>
                 <component type="Fireman"/>                
+                
+                <component type="Commander"/>
             </components>
 
         </configuration>
