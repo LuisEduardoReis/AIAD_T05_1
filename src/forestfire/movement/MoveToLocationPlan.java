@@ -49,6 +49,7 @@ public class MoveToLocationPlan {
 		props.put(MoveTask.PROPERTY_DESTINATION, dest);
 		props.put(MoveTask.PROPERTY_SCOPE, fireman);
 		props.put(AbstractTask.PROPERTY_CONDITION, new PlanFinishedTaskCondition(rplan));
+		
 		IEnvironmentSpace space = fireman.getEnvironment();
 		
 		Future<Void> fut = new Future<Void>();

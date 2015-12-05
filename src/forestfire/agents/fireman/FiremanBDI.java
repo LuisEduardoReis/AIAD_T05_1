@@ -29,7 +29,6 @@ import jadex.micro.annotation.RequiredServices;
 
 import java.util.Random;
 
-import forestfire.Util;
 import forestfire.movement.MoveToLocationPlan;
 
 @Agent
@@ -44,6 +43,8 @@ public class FiremanBDI {
 	@Agent
 	protected BDIAgent agent;
 
+	// #### BELIEFS ####
+	
 	@Belief
 	protected ContinuousSpace2D space = (ContinuousSpace2D) agent
 			.getParentAccess().getExtension("2dspace").get();
@@ -51,89 +52,54 @@ public class FiremanBDI {
 	@Belief
 	protected ISpaceObject myself = space.getAvatar(
 			agent.getComponentDescription(), agent.getModel().getFullName());
-
-	// Health
-	@Belief(updaterate=200)
-	protected double health = (double) myself.getProperty("health");
-
-
-	// View of space
+	
+	// View Range
 	@Belief
 	public final int viewRange = (int) myself.getProperty("viewRange");
 
-	protected ISpaceObject[] terrain = space.getSpaceObjectsByType("terrain");
-	public final int terrain_width = space.getAreaSize().getXAsInteger();
-	public final int terrain_height = space.getAreaSize().getYAsInteger();
+	// Action Range
+	@Belief
+	public final double actionRange = (double) myself.getProperty("actionRange");
+	
+	// Health
+	@Belief
+	protected double health;
 
+	// In Danger belief
+	@Belief
+	protected boolean inDanger;
+
+	// Fire in View belief
+	@Belief
+	protected boolean fireInView;
+	
+	// Fire in Range belief
+	@Belief
+	protected boolean fireInRange;
+	
+
+	// View of space
+	protected TerrainView terrain_view_aux = new TerrainView(space, myself, viewRange);
+	
 	@Belief(updaterate = 200)
-	ISpaceObject[] terrain_view = getTerrainView();
-	public int terrain_view_pos_x, terrain_view_pos_y;
+	protected TerrainView terrain_view = updateTerrainView();
 
-	public ISpaceObject getTerrainView(int x, int y) {
-		return terrain_view[(y + viewRange) * (2 * viewRange + 1)
-				+ (x + viewRange)];
-	}
-
-	protected ISpaceObject[] terrain_view_aux = null;
-
-	protected ISpaceObject[] getTerrainView() {
-		if (terrain_view_aux == null)
-			terrain_view_aux = new ISpaceObject[(2 * viewRange + 1)
-					* (2 * viewRange + 1)];
-
-		Vector2Double position = (Vector2Double) myself.getProperty("position");
-		int fx = position.getXAsInteger(), fy = position.getYAsInteger();
-		terrain_view_pos_x = fx;
-		terrain_view_pos_y = fy;
-
-		for (int i = -viewRange; i <= viewRange; i++) {
-			for (int j = -viewRange; j <= viewRange; j++) {
-				int x = (fx + j + terrain_width) % terrain_width, y = (fy + i + terrain_height)
-						% terrain_height;
-				terrain_view_aux[(i + viewRange) * (2 * viewRange + 1)
-						+ (j + viewRange)] = terrain[y * terrain_width + x];
-			}
-		}
-
+	protected TerrainView updateTerrainView() {
+		terrain_view_aux.updateView();
+		double dist = terrain_view_aux.distanceToNearestFire();
+		
+		// Update Beliefs based on view
+		health = (double) myself.getProperty("health");
+		
+		inDanger = dist < 2;
+		fireInRange = dist < actionRange;
+		fireInView = dist != Double.MAX_VALUE;		
+		
 		return terrain_view_aux;
 	}
-
 	
-	// In Danger belief
-	@Belief(updaterate = 200)
-	protected boolean inDanger = isInDanger();
+	// #### AGENT BODY ####
 
-	protected boolean isInDanger() {
-		Vector2Double position = (Vector2Double) myself.getProperty("position");
-		double x = position.getXAsDouble(), y = position.getYAsDouble();
-
-		for (int i = -viewRange; i <= viewRange; i++) {
-			for (int j = -viewRange; j <= viewRange; j++) {
-				ISpaceObject terrain = getTerrainView(j, i);
-				if ((float) terrain.getProperty("fire") >= 50f
-						&& Util.pointDistance(x, y, terrain_view_pos_x + j,
-								terrain_view_pos_y + i) < 2)
-					return true;
-			}
-		}
-		return false;
-	}
-
-	// Fire in Range belief
-	@Belief(updaterate = 200)
-	protected boolean fireInRange = isFireInRange();
-
-	protected boolean isFireInRange() {		
-		for (int i = -viewRange; i <= viewRange; i++) {
-			for (int j = -viewRange; j <= viewRange; j++) {
-				ISpaceObject terrain = getTerrainView(j, i);
-				if ((float) terrain.getProperty("fire") >= 50f)
-					return true;
-			}
-		}
-		return false;
-	}
-	
 	@AgentBody
 	public void body() {
 		Random r = new Random();
@@ -148,6 +114,8 @@ public class FiremanBDI {
 		agent.dispatchTopLevelGoal(new RunFromFire());
 	}
 
+	// #### INLINE PLANS ####
+	
 	@Plan(trigger = @Trigger(factchangeds = "inDanger"))
 	public void checkInDanger() {
 		if (inDanger) System.out.println("Fireman " + myself.getId() + " is in danger!");
@@ -158,11 +126,24 @@ public class FiremanBDI {
 		if (fireInRange) System.out.println("Fireman " + myself.getId() + " has fire in range");
 	}
 	
-	@Goal(succeedonpassed = false, excludemode=ExcludeMode.Never)
+	@Plan(trigger = @Trigger(factchangeds = "fireInView"))
+	public void checkFireInView() {
+		if (fireInView) System.out.println("Fireman " + myself.getId() + " has fire in view");
+	}
+	
+	// #### GOALS ####
+	
+	// Look for fire, default goal
+	@Goal
 	public static class LookForFire {}
 	
+	// Fight fire, triggered when there is fire in range
 	@Goal(deliberation=@Deliberation(inhibits=LookForFire.class, cardinalityone=true))
 	public static class FightFire {
+		
+		public FightFire() {
+			System.out.println("Created FightFire");
+		}
 		
 		@GoalCreationCondition(beliefs="fireInRange")
 		public static boolean checkCreate(FiremanBDI fireman) {
@@ -188,7 +169,7 @@ public class FiremanBDI {
 
 		@GoalTargetCondition(beliefs = "inDanger")
 		protected boolean target(FiremanBDI fireman) {
-			return !fireman.inDanger;
+			return true;
 		}
 		
 		@GoalDropCondition(beliefs="health")
@@ -217,6 +198,10 @@ public class FiremanBDI {
 
 	public ISpaceObject getMyself() {
 		return myself;
+	}
+
+	public TerrainView getTerrain_view() {
+		return terrain_view;
 	}
 
 }

@@ -1,7 +1,6 @@
 package forestfire;
 
 
-import forestfire.agents.fireman.FiremanBDI;
 import jadex.bridge.service.types.clock.IClockService;
 import jadex.extension.envsupport.environment.AbstractTask;
 import jadex.extension.envsupport.environment.IEnvironmentSpace;
@@ -9,6 +8,8 @@ import jadex.extension.envsupport.environment.ISpaceObject;
 import jadex.extension.envsupport.environment.space2d.Space2D;
 import jadex.extension.envsupport.math.IVector2;
 import jadex.extension.envsupport.math.Vector2Double;
+import forestfire.agents.fireman.FiremanBDI;
+import forestfire.agents.fireman.TerrainView;
 
 public class MoveTask extends AbstractTask {
 	// -------- constants --------
@@ -24,6 +25,8 @@ public class MoveTask extends AbstractTask {
 
 	/** The scope property. */
 	public static final String PROPERTY_SCOPE = "agent";
+	
+	
 
 	// -------- IObjectTask methods --------
 
@@ -44,10 +47,14 @@ public class MoveTask extends AbstractTask {
 		IVector2 destination = (IVector2) getProperty(PROPERTY_DESTINATION);
 		IVector2 loc = (IVector2) obj.getProperty(Space2D.PROPERTY_POSITION);		
 		double speed = ((Number) obj.getProperty(PROPERTY_SPEED)).doubleValue();
-		FiremanBDI fireman = (FiremanBDI) getProperty(PROPERTY_SCOPE);	
+		
+		
+		FiremanBDI fireman = (FiremanBDI) getProperty(PROPERTY_SCOPE);
+		TerrainView terrain_view = fireman.getTerrain_view();
 		
 		double loc_x = loc.getXAsDouble(), loc_y = loc.getYAsDouble();
-		int width = fireman.terrain_width, height = fireman.terrain_height;
+		int width = terrain_view.terrain_width, 
+			height = terrain_view.terrain_height;
 		double dist = 0, dest_x = 0, dest_y = 0;
 		
 		if (destination != null) {
@@ -79,12 +86,12 @@ public class MoveTask extends AbstractTask {
 				dir_y = (dest_y - loc_y)/dist;
 			}
 			
-			int vr = fireman.viewRange, tv_x = fireman.terrain_view_pos_x, tv_y = fireman.terrain_view_pos_y;
+			int vr = fireman.viewRange, tv_x = terrain_view.getPosX(), tv_y = terrain_view.getPosY();
 			
 			// Avoid fire (each fire in range applies a force on the fireman)
 			for(int y = -vr; y<=vr; y++) {
 				for(int x = -vr; x<=vr; x++) {
-					ISpaceObject terrain = fireman.getTerrainView(x, y);
+					ISpaceObject terrain = terrain_view.get(x, y);
 					if (((float) terrain.getProperty("fire")) < 50f) continue;
 					
 					double vx = tv_x + x - loc_x, 
@@ -100,8 +107,8 @@ public class MoveTask extends AbstractTask {
 			double d = Util.vectorLength(dir_x, dir_y);
 			if (d > 0) {
 				newloc = new Vector2Double(
-					(loc_x + maxdist*(dir_x/d)) % fireman.terrain_width,
-					(loc_y + maxdist*(dir_y/d)) % fireman.terrain_height);
+					(loc_x + maxdist*(dir_x/d)) % width,
+					(loc_y + maxdist*(dir_y/d)) % height);
 			} else
 				newloc = loc;
 		}

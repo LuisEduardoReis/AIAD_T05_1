@@ -36,8 +36,8 @@ public class LookForFirePlan {
 		
 		while(fireman.health > 0) {
 			Vector2Double dest = new Vector2Double(
-					r.nextDouble() * fireman.terrain_width, 
-					r.nextDouble() * fireman.terrain_height);
+					r.nextDouble() * fireman.getTerrain_view().terrain_width, 
+					r.nextDouble() * fireman.getTerrain_view().terrain_height);
 			plan.dispatchSubgoal(new FiremanBDI.Move(dest)).get();
 		}
 	}
