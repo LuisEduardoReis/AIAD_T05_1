@@ -12,8 +12,11 @@ import jadex.bdiv3.annotation.GoalMaintainCondition;
 import jadex.bdiv3.annotation.GoalTargetCondition;
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.Plans;
+import jadex.bdiv3.annotation.RawEvent;
 import jadex.bdiv3.annotation.Trigger;
+import jadex.bdiv3.runtime.ChangeEvent;
 import jadex.bridge.service.RequiredServiceInfo;
+import jadex.bridge.service.annotation.Service;
 import jadex.bridge.service.types.clock.IClockService;
 import jadex.extension.envsupport.environment.ISpaceObject;
 import jadex.extension.envsupport.environment.space2d.ContinuousSpace2D;
@@ -23,25 +26,33 @@ import jadex.extension.envsupport.math.Vector2Double;
 import jadex.micro.annotation.Agent;
 import jadex.micro.annotation.AgentBody;
 import jadex.micro.annotation.Binding;
+import jadex.micro.annotation.Implementation;
+import jadex.micro.annotation.ProvidedService;
+import jadex.micro.annotation.ProvidedServices;
 import jadex.micro.annotation.RequiredService;
 import jadex.micro.annotation.RequiredServices;
 
 import java.util.Random;
 
+import forestfire.agents.commander.IGiveOrderService;
 import forestfire.agents.commander.IReportTerrainViewService;
 import forestfire.movement.MoveToLocationPlan;
 
 @Agent
+@Service
 @Plans({
 	@Plan(trigger = @Trigger(goals = { FiremanBDI.LookForFire.class }), body = @Body(LookForFirePlan.class)),
 	@Plan(trigger = @Trigger(goals = { FiremanBDI.FightFire.class }), body = @Body(FightFirePlan.class)),
-	@Plan(trigger = @Trigger(goals = { FiremanBDI.Move.class, FiremanBDI.RunFromFire.class, FiremanBDI.ApproachFire.class }), body = @Body(MoveToLocationPlan.class))
+	@Plan(trigger = @Trigger(goals = { FiremanBDI.Move.class, FiremanBDI.RunFromFire.class, FiremanBDI.ApproachFire.class, FiremanBDI.FollowDestinationOrder.class }), body = @Body(MoveToLocationPlan.class))
+})
+@ProvidedServices({
+	@ProvidedService(type=IReportTerrainViewService.class, implementation=@Implementation(expression="$pojoagent")),
+	@ProvidedService(type=IGiveOrderService.class, implementation=@Implementation(expression="$pojoagent"))
 })
 @RequiredServices({
-	@RequiredService(name="clockser", type=IClockService.class, binding=@Binding(scope=RequiredServiceInfo.SCOPE_PLATFORM)),
-	@RequiredService(name="reportviewservice", type=IReportTerrainViewService.class, multiple=true, binding=@Binding(dynamic=true, scope=Binding.SCOPE_PLATFORM))
+	@RequiredService(name="clockser", type=IClockService.class, binding=@Binding(scope=RequiredServiceInfo.SCOPE_PLATFORM))
 })
-public class FiremanBDI {
+public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService {
 	public static final double SAFETY_RANGE = 2;
 
 	@Agent
@@ -98,21 +109,19 @@ public class FiremanBDI {
 		// Update Beliefs based on view
 		health = (double) myself.getProperty("health");
 		distanceToFire = terrain_view_aux.distanceToNearestFire();
-		
-		// Report view
-		if (report_service != null) report_service.reportTerrainView(this, terrain_view);
+
 		
 		return terrain_view_aux;
 	}
 	
-	// #### AGENT BODY ####
+	// Destination Order
+	@Belief
+	protected Vector2Double destination_order;
 	
-	protected IReportTerrainViewService report_service;
+	// #### AGENT BODY ####
 	
 	@AgentBody
 	public void body() {
-
-		report_service = (IReportTerrainViewService) agent.getServiceContainer().getRequiredService("reportviewservice").get();
 		
 		Random r = new Random();
 		myself.setProperty("position", new Vector2Double(
@@ -178,8 +187,21 @@ public class FiremanBDI {
 		
 	}
 	
-	// Fight fire, triggered when there is fire in range
 	@Goal(deliberation=@Deliberation(inhibits={LookForFire.class, ApproachFire.class}, cardinalityone=true))
+	public static class FollowDestinationOrder extends Move{
+
+		public FollowDestinationOrder(IVector2 destination) {
+			super(destination);
+		}
+
+		@GoalDropCondition(rawevents={@RawEvent(ChangeEvent.GOALADOPTED)})
+		public boolean checkDrop(FiremanBDI fireman) {
+			return destination != fireman.destination_order;
+		}
+	}
+	
+	// Fight fire, triggered when there is fire in range
+	@Goal(deliberation=@Deliberation(inhibits={LookForFire.class, ApproachFire.class, FollowDestinationOrder.class}, cardinalityone=true))
 	public static class FightFire {
 		public FightFire() {
 			// System.out.println("Goal Fight Fire");
@@ -197,7 +219,7 @@ public class FiremanBDI {
 	}
 	
 	// Run from fire, triggered when fireman is in danger
-	@Goal(excludemode=ExcludeMode.Never, deliberation=@Deliberation(inhibits={FightFire.class, LookForFire.class, ApproachFire.class}, cardinalityone=true))
+	@Goal(excludemode=ExcludeMode.Never, deliberation=@Deliberation(inhibits={FightFire.class, LookForFire.class, ApproachFire.class, FollowDestinationOrder.class }, cardinalityone=true))
 	public static class RunFromFire extends Move {		
 		public RunFromFire() { 
 			super(null);
@@ -259,6 +281,18 @@ public class FiremanBDI {
 
 	public double getDistanceToFire() {
 		return distanceToFire;
+	}
+
+	@Override
+	public TerrainView reportTerrainView() {
+		if (health > 0) return terrain_view;
+		else return null;
+	}
+
+	@Override
+	public void giveDestinationOrder(double x, double y) {
+		destination_order = new Vector2Double(x, y);
+		agent.dispatchTopLevelGoal(new FollowDestinationOrder(destination_order));
 	}
 
 
