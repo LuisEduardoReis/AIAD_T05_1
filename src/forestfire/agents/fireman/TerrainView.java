@@ -52,11 +52,11 @@ public class TerrainView {
 	public ISpaceObject get(int x, int y) {
 		return terrain_view[(y + viewRange) * (2 * viewRange + 1) + (x + viewRange)];
 	}
-	protected void set(int x, int y, ISpaceObject obj) {
+	public void set(int x, int y, ISpaceObject obj) {
 		terrain_view[(y + viewRange) * (2 * viewRange + 1) + (x + viewRange)] = obj;
 	}
 	
-	protected double distanceToNearestFire() {
+	public double distanceToNearestFire() {
 		Vector2Double position = (Vector2Double) myself.getProperty("position");
 		double x = position.getXAsDouble(), y = position.getYAsDouble();
 

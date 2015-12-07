@@ -36,13 +36,18 @@
                 	<env:property name="position">new Vector2Double(0,0)</env:property>
                     <env:property name="speed" class="double"> 1.0 </env:property>
                     <env:property name="health" class="double"> 100.0 </env:property>
-                    <env:property name="viewRange" class="int"> 8 </env:property>
+                    <env:property name="viewRange" class="int"> 5 </env:property>
                     <env:property name="actionRange" class="double"> 3.0 </env:property>
+                    <env:property name="fighting_fire" class="boolean"> false </env:property>
                 </env:objecttype>
             </env:objecttypes>
 
 			<env:tasktypes>
 				<env:tasktype name="move" class="MoveTask" />
+			</env:tasktypes>	
+			
+			<env:tasktypes>
+				<env:tasktype name="fight_fire" class="FightFireTask" />
 			</env:tasktypes>	
 
             <env:processtypes>
@@ -65,8 +70,12 @@
             <env:perspectives>
                 <env:perspective name="icons" class="Perspective2D" objectplacement="center">
                     <env:drawable objecttype="fireman" height="1.0" width="1.0">
-                        <env:texturedrectangle layer="2" imagepath="images/wanderer.png">
+                        <env:texturedrectangle layer="2" imagepath="images/fireman.png">
                         	<env:drawcondition>$object.health > 0</env:drawcondition>
+                        </env:texturedrectangle>
+                        
+                        <env:texturedrectangle layer="2" imagepath="images/fireman_water.png">
+                        	<env:drawcondition>$object.fighting_fire == true</env:drawcondition>
                         </env:texturedrectangle>
                         
                         <env:texturedrectangle layer="2" imagepath="images/dead.png">
@@ -145,12 +154,12 @@
 
             <components>
                 <component type="Fireman"/>
+                <!-- <component type="Fireman"/> -->
+                <!--  <component type="Fireman"/>
                 <component type="Fireman"/>
                 <component type="Fireman"/>
                 <component type="Fireman"/>
-                <component type="Fireman"/>
-                <component type="Fireman"/>
-                <component type="Fireman"/>                
+                <component type="Fireman"/>-->                
                 
                 <component type="Commander"/>
             </components>

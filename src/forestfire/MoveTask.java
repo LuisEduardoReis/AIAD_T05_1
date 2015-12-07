@@ -138,6 +138,7 @@ public class MoveTask extends AbstractTask {
 		// Finish task if: Reached destination, Didn't move or Dead.
 		if (newloc == destination || newloc == loc || ((double) obj.getProperty("health")) == 0)
 			setFinished(space, obj, true);
+			
 	}
 
 }

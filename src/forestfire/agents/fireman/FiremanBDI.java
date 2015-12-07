@@ -204,7 +204,8 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 	@Goal(deliberation=@Deliberation(inhibits={LookForFire.class, ApproachFire.class, FollowDestinationOrder.class}, cardinalityone=true))
 	public static class FightFire {
 		public FightFire() {
-			// System.out.println("Goal Fight Fire");
+			System.out.println("Goal Fight Fire");
+				
 		}		
 		
 		@GoalCreationCondition(beliefs="fireInRange")
