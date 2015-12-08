@@ -39,6 +39,7 @@
                     <env:property name="viewRange" class="int"> 5 </env:property>
                     <env:property name="actionRange" class="double"> 3.0 </env:property>
                     <env:property name="fighting_fire" class="boolean"> false </env:property>
+                    <env:property name="figh_fire_rating" class="float"> 0.1f </env:property>
                 </env:objecttype>
             </env:objecttypes>
 
@@ -71,7 +72,7 @@
                 <env:perspective name="icons" class="Perspective2D" objectplacement="center">
                     <env:drawable objecttype="fireman" height="1.0" width="1.0">
                         <env:texturedrectangle layer="2" imagepath="images/fireman.png">
-                        	<env:drawcondition>$object.health > 0</env:drawcondition>
+                        	<env:drawcondition>$object.fighting_fire == false</env:drawcondition>
                         </env:texturedrectangle>
                         
                         <env:texturedrectangle layer="2" imagepath="images/fireman_water.png">
@@ -84,6 +85,7 @@
                     </env:drawable>
 
                     <env:drawable objecttype="terrain" height="1.0" width="1.0">
+                         
                         <env:texturedrectangle layer="1" imagepath="images/terrain_2.png">
                             <env:drawcondition>$object.type.equals(1)</env:drawcondition>
                         </env:texturedrectangle>
@@ -104,6 +106,9 @@
                             <env:drawcondition>$object.fire >= 50</env:drawcondition>
                         </env:texturedrectangle>
                         
+                       	<env:texturedrectangle layer="1" imagepath="images/village.png">
+                            <env:drawcondition>$object.type.equals(4)</env:drawcondition>
+                        </env:texturedrectangle>
                                            
                     </env:drawable>
 
