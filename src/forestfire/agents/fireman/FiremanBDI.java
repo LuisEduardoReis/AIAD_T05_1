@@ -96,6 +96,9 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 	@Belief(dynamic=true)
 	protected boolean fireInView = distanceToFire != Double.MAX_VALUE;
 	
+	@Belief(dynamic=true)
+	protected boolean peopleInView = distanceToFire != Double.MAX_VALUE;
+	
 
 	// View of space
 	protected TerrainView terrain_view_aux = new TerrainView(space, myself, viewRange);
@@ -152,6 +155,11 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 		if (fireInView) System.out.println("Fireman " + myself.getId() + " has fire in view");
 	}
 	
+	@Plan(trigger = @Trigger(factchangeds = "peopleInDanger"))
+	public void checkPeopleInDanger() {
+		if (fireInView) System.out.println("Fireman " + myself.getId() + " knows that there are people in danger");
+	}
+	
 	// #### GOALS ####
 	
 	// Look for fire, default goal
@@ -166,7 +174,7 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 
 		public ApproachFire(double actionDistance) {
 			super(null);
-			this.approach_dist = actionDistance;
+			this.approach_dist = actionDistance - 0.5;
 			//System.out.println("Goal Approach Fire");
 		}
 		

@@ -37,6 +37,9 @@ public class CommanderBDI {
 	@Belief(updaterate=10000)
 	protected float fire_status[] = updateFireStatus();
 	
+	@Belief(updaterate=10000)
+	protected float people_danger[] = updatePeopleInDanger();
+	
 	protected float fire_status_aux[];
 	protected float[] updateFireStatus() {
 		if (fire_status_aux == null)
@@ -83,6 +86,16 @@ public class CommanderBDI {
 		fire_status_aux[(y % terrain_height) * terrain_width + (x % terrain_width)] = v;
 	}
 
+	
+	
+	
+	protected float[] updatePeopleInDanger() {
+		
+		return null;
+		
+		
+	}
+	
 	@AgentBody
 	public void body() {
 		

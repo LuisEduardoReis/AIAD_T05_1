@@ -40,23 +40,27 @@ public class FightFireTask extends AbstractTask {
 		TerrainView terrain_view = fireman.getTerrain_view();
 
 		int vr = fireman.viewRange;
+		double actionRange = fireman.actionRange;
+		boolean hasFire = false;
 		for (int y = -vr; y <= vr; y++) {
 			for (int x = -vr; x <= vr; x++) {
 				ISpaceObject terrain = terrain_view.get(x, y);
-				if ((float) terrain.getProperty("fire") >= 50f) {
-					float new_fire_state = (float) terrain.getProperty("fire")-(float)fireman.getMyself().getProperty("figh_fire_rating");	
+				if ((float) terrain.getProperty("fire") >= 50f && Util.vectorLength(x, y) <= actionRange) {
+					float new_fire_state = (float) ((float) terrain.getProperty("fire")-((float)fireman.getMyself().getProperty("figh_fire_rate"))*progress*0.001);	
 					System.out.println("Extinguishing fire pos x="+x+", y="+y+" "+terrain.getProperty("fire")+" new state "+new_fire_state);
 					terrain.setProperty("fire", new_fire_state);
 					fireman.getMyself().setProperty("fighting_fire", true);
 					System.out.println("fighting_fire "+ fireman.getMyself().getProperty("fighting_fire"));
-				}
-				else{
-					fireman.getMyself().setProperty("fighting_fire", false);
-					System.out.println("fighting_fire "+ fireman.getMyself().getProperty("fighting_fire"));
-					setFinished(space, obj, true);
+					hasFire = true;
 				}
 			}
 			
+		}
+		
+		if(!hasFire){
+			fireman.getMyself().setProperty("fighting_fire", false);
+			System.out.println("fighting_fire "+ fireman.getMyself().getProperty("fighting_fire"));
+			setFinished(space, obj, true);
 		}
 		
 
