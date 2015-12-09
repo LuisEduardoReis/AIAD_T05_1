@@ -41,6 +41,8 @@ public class FightFirePlan {
 	{	
 		ISpaceObject myself	= fireman.getMyself();
 		
+		
+		
 		while(fireman.health > 0) {
 			
 			Map<Object, Object> props = new HashMap<Object, Object>();

@@ -15,6 +15,8 @@ import jadex.bdiv3.annotation.Plans;
 import jadex.bdiv3.annotation.RawEvent;
 import jadex.bdiv3.annotation.Trigger;
 import jadex.bdiv3.runtime.ChangeEvent;
+import jadex.bdiv3.runtime.IGoal;
+import jadex.bdiv3.runtime.IGoal.GoalLifecycleState;
 import jadex.bridge.service.RequiredServiceInfo;
 import jadex.bridge.service.annotation.Service;
 import jadex.bridge.service.types.clock.IClockService;
@@ -43,7 +45,8 @@ import forestfire.movement.MoveToLocationPlan;
 @Plans({
 	@Plan(trigger = @Trigger(goals = { FiremanBDI.LookForFire.class }), body = @Body(LookForFirePlan.class)),
 	@Plan(trigger = @Trigger(goals = { FiremanBDI.FightFire.class }), body = @Body(FightFirePlan.class)),
-	@Plan(trigger = @Trigger(goals = { FiremanBDI.Move.class, FiremanBDI.RunFromFire.class, FiremanBDI.ApproachFire.class, FiremanBDI.FollowDestinationOrder.class }), body = @Body(MoveToLocationPlan.class))
+	@Plan(trigger = @Trigger(goals = { FiremanBDI.Move.class, FiremanBDI.RunFromFire.class, FiremanBDI.ApproachFire.class, FiremanBDI.FollowDestinationOrder.class, FiremanBDI.ApproachHouseInDanger.class }), body = @Body(MoveToLocationPlan.class))
+	
 })
 @ProvidedServices({
 	@ProvidedService(type=IReportTerrainViewService.class, implementation=@Implementation(expression="$pojoagent")),
@@ -79,6 +82,9 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 	// Health
 	@Belief
 	protected double health;
+	
+	@Belief
+	public final double inDangerThreshold = (double)myself.getProperty("in_danger_threshold");
 
 	// Distance to fire
 	@Belief
@@ -96,12 +102,12 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 	@Belief(dynamic=true)
 	protected boolean fireInView = distanceToFire != Double.MAX_VALUE;
 	
-	@Belief(dynamic=true)
-	protected boolean peopleInView = distanceToFire != Double.MAX_VALUE;
+	@Belief
+	protected IVector2 houseBeingSaved = null;
 	
 
 	// View of space
-	protected TerrainView terrain_view_aux = new TerrainView(space, myself, viewRange);
+	protected TerrainView terrain_view_aux = new TerrainView(space, myself);
 	
 	@Belief(updaterate = 200)
 	protected TerrainView terrain_view = updateTerrainView();
@@ -111,8 +117,12 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 		
 		// Update Beliefs based on view
 		health = (double) myself.getProperty("health");
-		distanceToFire = terrain_view_aux.distanceToNearestFire();
-
+		distanceToFire = terrain_view_aux.distanceToNearestFire((IVector2)myself.getProperty("position"));
+		
+		if (houseBeingSaved != null) houseBeingSaved = terrain_view_aux.nearestHouseInDanger();
+		
+		IGoal ffg = (IGoal) agent.getGoal(FightFire.class);
+		myself.setProperty("fighting_fire", ffg != null);// ? false : ffg.getLifecycleState() == GoalLifecycleState.ACTIVE);
 		
 		return terrain_view_aux;
 	}
@@ -136,6 +146,9 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 		
 		agent.dispatchTopLevelGoal(new LookForFire());
 		agent.dispatchTopLevelGoal(new RunFromFire());
+		agent.dispatchTopLevelGoal(new FightFire());
+		//agent.dispatchTopLevelGoal(new SaveHouseInDanger());
+		
 	}
 
 	// #### INLINE PLANS ####
@@ -155,12 +168,44 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 		if (fireInView) System.out.println("Fireman " + myself.getId() + " has fire in view");
 	}
 	
-	@Plan(trigger = @Trigger(factchangeds = "peopleInDanger"))
+	@Plan(trigger = @Trigger(factchangeds = "houseBeingSaved"))
 	public void checkPeopleInDanger() {
-		if (fireInView) System.out.println("Fireman " + myself.getId() + " knows that there are people in danger");
+		if (houseBeingSaved != null) System.out.println("Fireman " + myself.getId() + " is going to save house at pos "+ houseBeingSaved.toString());
 	}
 	
 	// #### GOALS ####
+	
+	
+	@Goal (deliberation=@Deliberation(inhibits={LookForFire.class, FightFire.class, FollowDestinationOrder.class}, cardinalityone=true))
+	public static class ApproachHouseInDanger extends Move {
+		 
+		public ApproachHouseInDanger(IVector2 destination) {
+			super(destination);
+		}
+
+		@GoalCreationCondition(beliefs="houseBeingSaved")
+		public static ApproachHouseInDanger checkCreate(FiremanBDI fireman) {
+			if (fireman.houseBeingSaved != null)
+				return new ApproachHouseInDanger(fireman.houseBeingSaved);
+			else
+				return null;
+		}
+		
+		@GoalDropCondition(beliefs="terrain_view")
+		public static boolean checkDrop(FiremanBDI fireman, ApproachHouseInDanger goal) {
+			if (fireman.houseBeingSaved != goal.destination) return true;
+			
+			ISpaceObject house = fireman.terrain_view.get(goal.destination.getXAsInteger(), goal.destination.getYAsInteger());
+			return((boolean)house.getProperty("house_people") || (int)house.getProperty("fuel") == 0);
+		}
+		
+	}
+	
+	@Goal
+	public static class SaveHouseInDanger {
+		
+	}
+	
 	
 	// Look for fire, default goal
 	@Goal
@@ -209,21 +254,26 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 	}
 	
 	// Fight fire, triggered when there is fire in range
-	@Goal(deliberation=@Deliberation(inhibits={LookForFire.class, ApproachFire.class, FollowDestinationOrder.class}, cardinalityone=true))
+	@Goal(excludemode=ExcludeMode.Never,deliberation=@Deliberation(inhibits={LookForFire.class, ApproachFire.class}, cardinalityone=true))
 	public static class FightFire {
 		public FightFire() {
 			System.out.println("Goal Fight Fire");
 				
-		}		
-		
-		@GoalCreationCondition(beliefs="fireInRange")
-		public static boolean checkCreate(FiremanBDI fireman) {
-			return fireman.fireInRange;
 		}
 		
-		@GoalDropCondition(beliefs="fireInRange")
-		public static boolean checkDrop(FiremanBDI fireman) {
+		@GoalMaintainCondition(beliefs = "fireInRange")
+		protected boolean maintain(FiremanBDI fireman) {
 			return !fireman.fireInRange;
+		}
+
+		@GoalTargetCondition(beliefs = "fireInRange")
+		protected boolean target(FiremanBDI fireman) {
+			return !fireman.fireInRange;
+		}
+		
+		@GoalDropCondition(beliefs="health")
+		public static boolean checkDrop(FiremanBDI fireman) {
+			return fireman.health <= 0;
 		}
 	}
 	
@@ -244,7 +294,8 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 		protected boolean target(FiremanBDI fireman) {
 			return true;
 		}
-		
+	
+		//when fireman is dead he does not need to care about security anymore
 		@GoalDropCondition(beliefs="health")
 		public static boolean checkDrop(FiremanBDI fireman) {
 			return fireman.health <= 0;

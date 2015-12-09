@@ -136,7 +136,7 @@ public class MoveTask extends AbstractTask {
 		((Space2D) space).setPosition(obj.getId(), newloc);
 		
 		// Finish task if: Reached destination, Didn't move or Dead.
-		if (newloc == destination || newloc == loc || ((double) obj.getProperty("health")) == 0)
+		if (newloc == destination || (newloc == loc && approach_dist < 0) || ((double) obj.getProperty("health")) == 0)
 			setFinished(space, obj, true);
 			
 	}

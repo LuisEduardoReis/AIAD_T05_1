@@ -30,7 +30,6 @@
                     <env:property name="type" class="String"/>
                     <env:property name="fire" class="Float"/>
                     <env:property name="fuel" class="Float"/>
-                    <!-- <env:property name="house" class="boolean">false</env:property>-->
                     <env:property name="house_people" class="boolean">false</env:property>
                 </env:objecttype>
 
@@ -42,6 +41,7 @@
                     <env:property name="actionRange" class="double"> 3.0 </env:property>
                     <env:property name="fighting_fire" class="boolean"> false </env:property>
                     <env:property name="figh_fire_rate" class="float"> 100.0f </env:property>
+                    <env:property name="in_danger_threshold" class="double">10.0</env:property>
                 </env:objecttype>
             </env:objecttypes>
 
@@ -108,11 +108,11 @@
                             <env:drawcondition>$object.fire >= 50</env:drawcondition>
                         </env:texturedrectangle>
                         
-                       	<env:texturedrectangle layer="1" imagepath="images/house_people.png">
+                       	<env:texturedrectangle layer="2" height="2.0" width="2.0" imagepath="images/house_people.png">
                             <env:drawcondition>$object.type.equals(4) &amp;&amp; $object.house_people</env:drawcondition>
                         </env:texturedrectangle>
                         
-                       	<env:texturedrectangle layer="1" imagepath="images/house.png">
+                       	<env:texturedrectangle layer="2" imagepath="images/house.png">
                             <env:drawcondition>$object.type.equals(4) &amp;&amp; !($object.house_people)</env:drawcondition>
                         </env:texturedrectangle>
                                            
