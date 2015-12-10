@@ -97,6 +97,15 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
 	public void execute(IClockService iClockService,
 			IEnvironmentSpace iEnvironmentSpace) {
 
+		// Debug fire
+		/*
+		for (int i = 0; i < h; i++) {
+			for (int j = 0; j < w; j++) {
+				System.out.format(" %02.0f", current.getFire(j, i));
+			}
+			System.out.println();
+		}*/
+		
 		// Propagate fire
 		for (int i = 0; i < terrain.length; i++) {
 			current.fire[i] = next.fire[i] = (float) terrain[i]
@@ -105,8 +114,7 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
 					.getProperty("fuel");
 		}
 
-		float windDir = ((float) space.getProperty("wind_direction"))
-				* Util.degToRad;
+		float windDir = ((float) space.getProperty("wind_direction"))* Util.degToRad;
 		float windVel = ((float) space.getProperty("wind_velocity"));
 
 		for (int y = 0; y < h; y++) {
@@ -117,6 +125,7 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
 					next.decFire(x, y, 1);
 
 				if (fire >= 50) {
+					if (current.getFuel(x, y) > 0) next.incFire(x, y, 1);
 					next.decFuel(x, y, 2);
 
 					for (int i = 0; i < 3; i++) {
