@@ -34,7 +34,7 @@ public class FightFireTask extends AbstractTask {
 	public void execute(IEnvironmentSpace space, ISpaceObject obj,
 			long progress, IClockService clock) {
 		FiremanBDI fireman = (FiremanBDI) getProperty(PROPERTY_SCOPE);
-		TerrainView terrain_view = fireman.getTerrain_view();
+		TerrainView terrain_view = fireman.getTerrainView();
 
 		int vr = fireman.viewRange;
 		double actionRange = fireman.actionRange;

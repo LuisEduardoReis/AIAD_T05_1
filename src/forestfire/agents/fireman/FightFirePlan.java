@@ -1,8 +1,5 @@
 package forestfire.agents.fireman;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.PlanAPI;
 import jadex.bdiv3.annotation.PlanBody;
@@ -15,9 +12,13 @@ import jadex.commons.future.Future;
 import jadex.extension.envsupport.environment.AbstractTask;
 import jadex.extension.envsupport.environment.IEnvironmentSpace;
 import jadex.extension.envsupport.environment.ISpaceObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import forestfire.FightFireTask;
 import forestfire.MoveTask;
-import forestfire.agents.fireman.FiremanBDI.FightFire;
+import forestfire.agents.fireman.goals.FightFireGoal;
 
 @Plan
 public class FightFirePlan {
@@ -28,7 +29,7 @@ public class FightFirePlan {
 	protected FiremanBDI fireman;
 	
 	@PlanReason
-	protected FightFire goal;
+	protected FightFireGoal goal;
 	
 	@PlanAPI
 	protected IPlan rplan;

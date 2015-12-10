@@ -58,7 +58,7 @@ public class MoveTask extends AbstractTask {
 		double approach_dist = (double) getProperty(PROPERTY_APPROACH_DIST);
 		
 		FiremanBDI fireman = (FiremanBDI) getProperty(PROPERTY_SCOPE);
-		TerrainView terrain_view = fireman.getTerrain_view();
+		TerrainView terrain_view = fireman.getTerrainView();
 		
 		double loc_x = loc.getXAsDouble(), loc_y = loc.getYAsDouble();
 		int width = terrain_view.terrain_width, 

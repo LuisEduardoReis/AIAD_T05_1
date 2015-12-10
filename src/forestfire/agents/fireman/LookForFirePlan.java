@@ -10,7 +10,8 @@ import jadex.extension.envsupport.math.Vector2Double;
 
 import java.util.Random;
 
-import forestfire.agents.fireman.FiremanBDI.LookForFire;
+import forestfire.agents.fireman.goals.LookForFireGoal;
+import forestfire.movement.MoveGoal;
 
 @Plan
 public class LookForFirePlan {
@@ -24,7 +25,7 @@ public class LookForFirePlan {
 	protected IPlan plan;
 	
 	@PlanReason
-	protected LookForFire goal;
+	protected LookForFireGoal goal;
 	
 	/**
 	 *  The plan body.
@@ -36,9 +37,9 @@ public class LookForFirePlan {
 		
 		while(fireman.health > 0) {
 			Vector2Double dest = new Vector2Double(
-					r.nextDouble() * fireman.getTerrain_view().terrain_width, 
-					r.nextDouble() * fireman.getTerrain_view().terrain_height);
-			plan.dispatchSubgoal(new FiremanBDI.Move(dest)).get();
+					r.nextDouble() * fireman.getTerrainView().terrain_width, 
+					r.nextDouble() * fireman.getTerrainView().terrain_height);
+			plan.dispatchSubgoal(new MoveGoal(dest)).get();
 		}
 	}
 	

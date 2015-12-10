@@ -1,12 +1,16 @@
 package forestfire.agents.fireman;
 
+import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.PlanAPI;
 import jadex.bdiv3.annotation.PlanBody;
 import jadex.bdiv3.annotation.PlanCapability;
 import jadex.bdiv3.annotation.PlanReason;
 import jadex.bdiv3.runtime.IPlan;
-import forestfire.agents.fireman.FiremanBDI.FightFire;
+import jadex.extension.envsupport.environment.ISpaceObject;
+import jadex.extension.envsupport.math.IVector2;
+import forestfire.agents.fireman.goals.SaveHouseInDangerGoal;
 
+@Plan
 public class SavePeoplePlan {
 
 	// -------- attributes --------
@@ -15,7 +19,7 @@ public class SavePeoplePlan {
 	protected FiremanBDI fireman;
 
 	@PlanReason
-	protected FightFire goal;
+	protected SaveHouseInDangerGoal goal;
 
 	@PlanAPI
 	protected IPlan rplan;
@@ -25,7 +29,14 @@ public class SavePeoplePlan {
 	 */
 	@PlanBody
 	public void body() {
-		// Go to house
+		rplan.waitFor(3000).get();
+		TerrainView view = fireman.terrain_view;
+		IVector2 v = fireman.houseBeingSaved;
+		if(v == null) System.out.println("ups");
+		ISpaceObject house = view.getGlobal(fireman.houseBeingSaved.getXAsInteger(),fireman.houseBeingSaved.getYAsInteger());
+		house.setProperty("house_people", false);
+		fireman.houseBeingSaved = null;
+		System.out.println("People saved!");
 	}
 
 }

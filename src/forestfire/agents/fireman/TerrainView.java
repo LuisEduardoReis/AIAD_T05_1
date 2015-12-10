@@ -13,7 +13,6 @@ public class TerrainView {
 
 	public final int viewRange;
 	public final int terrain_width, terrain_height;
-	protected final double inDangerThreshold;
 
 	protected ISpaceObject[] terrain;
 	protected ISpaceObject[] terrain_view;
@@ -36,10 +35,7 @@ public class TerrainView {
 
 		
 		this.terrain_width = space.getAreaSize().getXAsInteger();
-		this.terrain_height = space.getAreaSize().getYAsInteger();
-		
-		this.inDangerThreshold = (double) myself.getProperty("in_danger_threshold");
-		
+		this.terrain_height = space.getAreaSize().getYAsInteger();		
 		
 
 		houses = new ArrayList<>();
@@ -102,12 +98,18 @@ public class TerrainView {
 	public IVector2 nearestHouseInDanger() {
 		
 		IVector2 nearest = null;
-		double min_dist = inDangerThreshold;
+		double min_dist = FiremanBDI.HOUSE_IN_DANGER_THRESHOLD;
 		for(int i = 0; i < houses.size(); i++){
 			double house_dist = distanceToNearestFire(houses.get(i));
 			if (house_dist < min_dist) {
-				min_dist = house_dist;
-				nearest = houses.get(i);
+				ISpaceObject house = getGlobal(houses.get(i).getXAsInteger(), houses.get(i).getYAsInteger());
+				boolean has_people = (boolean) house.getProperty("house_people");
+				boolean burned_down = ((float)house.getProperty("fuel") == 0);
+				
+				if (has_people && !burned_down) {
+					min_dist = house_dist;
+					nearest = houses.get(i);
+				}
 			}
 			
 		}
@@ -126,4 +128,10 @@ public class TerrainView {
 	public int getPosY() {
 		return pos_y;
 	}
+	
+	
+	public ISpaceObject getGlobal(int x, int y) {
+		return terrain[(y % terrain_height) * terrain_width + (x % terrain_width)];
+	}
+	
 }

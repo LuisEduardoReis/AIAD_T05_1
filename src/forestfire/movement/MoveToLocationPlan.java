@@ -19,7 +19,6 @@ import java.util.Map;
 
 import forestfire.MoveTask;
 import forestfire.agents.fireman.FiremanBDI;
-import forestfire.agents.fireman.FiremanBDI.Move;
 
 @Plan
 public class MoveToLocationPlan {
@@ -33,7 +32,7 @@ public class MoveToLocationPlan {
 	protected IPlan rplan;
 	
 	@PlanReason
-	protected Move goal;
+	protected MoveGoal goal;
 	
 	/**
 	 *  The plan body.
