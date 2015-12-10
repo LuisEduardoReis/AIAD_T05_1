@@ -15,7 +15,7 @@ import jadex.bdiv3.annotation.Plans;
 import jadex.bdiv3.annotation.RawEvent;
 import jadex.bdiv3.annotation.Trigger;
 import jadex.bdiv3.runtime.ChangeEvent;
-import jadex.bdiv3.runtime.IGoal.GoalLifecycleState;
+import jadex.bdiv3.runtime.IGoal;
 import jadex.bdiv3.runtime.IGoal.GoalProcessingState;
 import jadex.bridge.service.RequiredServiceInfo;
 import jadex.bridge.service.annotation.Service;
@@ -35,9 +35,9 @@ import jadex.micro.annotation.RequiredService;
 import jadex.micro.annotation.RequiredServices;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Random;
 
+import forestfire.Util;
 import forestfire.agents.commander.IGiveOrderService;
 import forestfire.agents.commander.IReportTerrainViewService;
 import forestfire.movement.MoveToLocationPlan;
@@ -47,8 +47,8 @@ import forestfire.movement.MoveToLocationPlan;
 @Plans({
 	@Plan(trigger = @Trigger(goals = { FiremanBDI.LookForFire.class }), body = @Body(LookForFirePlan.class)),
 	@Plan(trigger = @Trigger(goals = { FiremanBDI.FightFire.class }), body = @Body(FightFirePlan.class)),
-	@Plan(trigger = @Trigger(goals = { FiremanBDI.Move.class, FiremanBDI.RunFromFire.class, FiremanBDI.ApproachFire.class, FiremanBDI.FollowDestinationOrder.class, FiremanBDI.ApproachHouseInDanger.class }), body = @Body(MoveToLocationPlan.class))
-	
+	@Plan(trigger = @Trigger(goals = { FiremanBDI.Move.class, FiremanBDI.RunFromFire.class, FiremanBDI.ApproachFire.class, FiremanBDI.FollowDestinationOrder.class, FiremanBDI.ApproachHouseInDanger.class }), body = @Body(MoveToLocationPlan.class)),
+	@Plan(trigger = @Trigger(goals = { FiremanBDI.SaveHouseInDanger.class }), body = @Body(SavePeoplePlan.class))
 })
 @ProvidedServices({
 	@ProvidedService(type=IReportTerrainViewService.class, implementation=@Implementation(expression="$pojoagent")),
@@ -92,6 +92,9 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 	@Belief
 	protected double distanceToFire = Double.MAX_VALUE; 
 	
+	@Belief
+	protected double distanceToHouse = Double.MAX_VALUE; 
+	
 	// In Danger belief
 	@Belief(dynamic=true)
 	protected boolean inDanger = distanceToFire < SAFETY_RANGE;
@@ -107,6 +110,9 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 	@Belief
 	protected IVector2 houseBeingSaved = null;
 	
+	@Belief
+	protected boolean houseInRange = false;
+	
 
 	// View of space
 	protected TerrainView terrain_view_aux = new TerrainView(space, myself);
@@ -121,7 +127,11 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 		health = (double) myself.getProperty("health");
 		distanceToFire = terrain_view_aux.distanceToNearestFire((IVector2)myself.getProperty("position"));
 		
-		if (houseBeingSaved != null) houseBeingSaved = terrain_view_aux.nearestHouseInDanger();
+		
+		if (houseBeingSaved != null)
+			houseBeingSaved = terrain_view_aux.nearestHouseInDanger();
+		
+		houseInRange = houseBeingSaved != null && this.getDistanceToHouse() < (double)this.getMyself().getProperty("save_house_threshold");
 		
 		ArrayList<FightFire> ffgc = (ArrayList<FightFire>) agent.getGoals(FightFire.class);
 		//if(ffgc.size()>0)
@@ -151,7 +161,7 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 		agent.dispatchTopLevelGoal(new LookForFire());
 		agent.dispatchTopLevelGoal(new RunFromFire());
 		agent.dispatchTopLevelGoal(new FightFire());
-		//agent.dispatchTopLevelGoal(new SaveHouseInDanger());
+		agent.dispatchTopLevelGoal(new SaveHouseInDanger());
 		
 	}
 
@@ -178,38 +188,6 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 	}
 	
 	// #### GOALS ####
-	
-	
-	@Goal (deliberation=@Deliberation(inhibits={LookForFire.class, FightFire.class, FollowDestinationOrder.class}, cardinalityone=true))
-	public static class ApproachHouseInDanger extends Move {
-		 
-		public ApproachHouseInDanger(IVector2 destination) {
-			super(destination);
-		}
-
-		@GoalCreationCondition(beliefs="houseBeingSaved")
-		public static ApproachHouseInDanger checkCreate(FiremanBDI fireman) {
-			if (fireman.houseBeingSaved != null)
-				return new ApproachHouseInDanger(fireman.houseBeingSaved);
-			else
-				return null;
-		}
-		
-		@GoalDropCondition(beliefs="terrain_view")
-		public static boolean checkDrop(FiremanBDI fireman, ApproachHouseInDanger goal) {
-			if (fireman.houseBeingSaved != goal.destination) return true;
-			
-			ISpaceObject house = fireman.terrain_view.get(goal.destination.getXAsInteger(), goal.destination.getYAsInteger());
-			return((boolean)house.getProperty("house_people") || (int)house.getProperty("fuel") == 0);
-		}
-		
-	}
-	
-	@Goal
-	public static class SaveHouseInDanger {
-		
-	}
-	
 	
 	// Look for fire, default goal
 	@Goal
@@ -258,7 +236,7 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 	}
 	
 	// Fight fire, triggered when there is fire in range
-	@Goal(excludemode=ExcludeMode.Never,deliberation=@Deliberation(inhibits={LookForFire.class, ApproachFire.class}, cardinalityone=true))
+	@Goal(excludemode=ExcludeMode.Never,deliberation=@Deliberation(inhibits={ApproachFire.class, LookForFire.class}, cardinalityone=true))
 	public static class FightFire {
 		public FightFire() {
 			System.out.println("Goal Fight Fire");
@@ -281,8 +259,60 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 		}
 	}
 	
+	@Goal (deliberation=@Deliberation(inhibits={FollowDestinationOrder.class, ApproachFire.class, LookForFire.class}, cardinalityone=true))
+	public static class ApproachHouseInDanger extends Move {
+		 
+		public ApproachHouseInDanger(IVector2 destination) {
+			super(destination);
+		}
+
+		@GoalCreationCondition(beliefs="houseBeingSaved")
+		public static ApproachHouseInDanger checkCreate(FiremanBDI fireman) {
+			if (fireman.houseBeingSaved != null)
+				return new ApproachHouseInDanger(fireman.houseBeingSaved);
+			else
+				return null;
+		}
+		
+		@GoalDropCondition(beliefs="terrain_view")
+		public static boolean checkDrop(FiremanBDI fireman, IGoal goal) {	
+			if(fireman.houseBeingSaved == null) return true;
+			ISpaceObject house = fireman.terrain_view.getGlobal(fireman.houseBeingSaved.getXAsInteger(),fireman.houseBeingSaved.getYAsInteger());
+			return((boolean)house.getProperty("house_people") || (float)house.getProperty("fuel") == 0);
+		}
+		
+	}
+	
+	
+	
+	@Goal(excludemode=ExcludeMode.Never,deliberation=@Deliberation(inhibits={ApproachFire.class, FollowDestinationOrder.class, FightFire.class, ApproachHouseInDanger.class}, cardinalityone=true))
+	public static class SaveHouseInDanger {
+		public SaveHouseInDanger() {
+			System.out.println("Goal SaveHouseInDanger");
+		}
+		
+		@GoalMaintainCondition(beliefs = "houseInRange")
+		protected boolean maintain(FiremanBDI fireman) {
+			return fireman.houseBeingSaved == null;
+		}
+
+		@GoalTargetCondition(beliefs = "houseInRange")
+		protected boolean target(FiremanBDI fireman) {
+			return fireman.houseBeingSaved == null;
+		}
+		
+		@GoalDropCondition(beliefs="health")
+		public static boolean checkDrop(FiremanBDI fireman) {
+			return fireman.health <= 0 ;
+		}
+		
+		
+	}
+	
+	
+	
 	// Run from fire, triggered when fireman is in danger
-	@Goal(excludemode=ExcludeMode.Never, deliberation=@Deliberation(inhibits={FightFire.class, LookForFire.class, ApproachFire.class, FollowDestinationOrder.class }, cardinalityone=true))
+	@Goal(excludemode=ExcludeMode.Never, deliberation=@Deliberation(inhibits={ApproachHouseInDanger.class, FollowDestinationOrder.class, ApproachFire.class, LookForFire.class }, cardinalityone=true))
 	public static class RunFromFire extends Move {		
 		public RunFromFire() { 
 			super(null);
@@ -345,6 +375,12 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 
 	public double getDistanceToFire() {
 		return distanceToFire;
+	}
+	
+	public double getDistanceToHouse(){
+		if(houseBeingSaved == null) return Double.MAX_VALUE;
+		IVector2 pos = (IVector2) this.myself.getProperty("position");
+		return Util.pointDistance(pos.getXAsDouble(), pos.getYAsDouble(), houseBeingSaved.getXAsDouble(), houseBeingSaved.getYAsDouble());
 	}
 
 	@Override

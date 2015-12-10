@@ -47,7 +47,7 @@ public class ForestProcess extends SimplePropertyObject implements
 			int v_y = Util.randInt(0, spaceHeight-1);
 			int v_x = Util.randInt(0, spaceWidth-1);
 
-			int pos = Math.round(v_y / 2) * spaceWidth + Math.round(v_x / 2);
+			int pos = v_y * spaceWidth + v_x;
 			if((int) terrain[pos].getProperty("type") == 0)
 			{
 				terrain[pos].setProperty("type", 4);

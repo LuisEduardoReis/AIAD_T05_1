@@ -126,4 +126,10 @@ public class TerrainView {
 	public int getPosY() {
 		return pos_y;
 	}
+	
+	
+	public ISpaceObject getGlobal(int x, int y) {
+		return terrain[(y % terrain_height) * terrain_width + (x % terrain_width)];
+	}
+	
 }
