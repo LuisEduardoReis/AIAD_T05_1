@@ -15,8 +15,8 @@ import jadex.bdiv3.annotation.Plans;
 import jadex.bdiv3.annotation.RawEvent;
 import jadex.bdiv3.annotation.Trigger;
 import jadex.bdiv3.runtime.ChangeEvent;
-import jadex.bdiv3.runtime.IGoal;
 import jadex.bdiv3.runtime.IGoal.GoalLifecycleState;
+import jadex.bdiv3.runtime.IGoal.GoalProcessingState;
 import jadex.bridge.service.RequiredServiceInfo;
 import jadex.bridge.service.annotation.Service;
 import jadex.bridge.service.types.clock.IClockService;
@@ -34,6 +34,8 @@ import jadex.micro.annotation.ProvidedServices;
 import jadex.micro.annotation.RequiredService;
 import jadex.micro.annotation.RequiredServices;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Random;
 
 import forestfire.agents.commander.IGiveOrderService;
@@ -121,8 +123,10 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 		
 		if (houseBeingSaved != null) houseBeingSaved = terrain_view_aux.nearestHouseInDanger();
 		
-		IGoal ffg = (IGoal) agent.getGoal(FightFire.class);
-		myself.setProperty("fighting_fire", ffg != null);// ? false : ffg.getLifecycleState() == GoalLifecycleState.ACTIVE);
+		ArrayList<FightFire> ffgc = (ArrayList<FightFire>) agent.getGoals(FightFire.class);
+		//if(ffgc.size()>0)
+		//System.out.println(agent.getGoal(ffgc.get(0)).getProcessingState());
+		myself.setProperty("fighting_fire", ffgc.size()>0 && agent.getGoal(ffgc.get(0)).getProcessingState() == GoalProcessingState.INPROCESS);// ? false : ffg.getLifecycleState() == GoalLifecycleState.ACTIVE);
 		
 		return terrain_view_aux;
 	}

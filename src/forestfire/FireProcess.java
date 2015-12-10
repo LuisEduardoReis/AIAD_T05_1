@@ -77,9 +77,10 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
 		this.terrain = space.getSpaceObjectsByType("terrain");
 
 		// Start fire
-		terrain[Math.round(h / 2) * w + Math.round(w / 2)].setProperty("fire",
-				100.0f);
-
+		//terrain[Math.round(h / 2) * w + Math.round(w / 2)].setProperty("fire",100.0f);
+		for(int i = 0; i < 5; i++)
+			terrain[r.nextInt(h) * w + r.nextInt(w)].setProperty("fire",100.0f);
+		
 		// Set wind
 		setRandomWind();
 

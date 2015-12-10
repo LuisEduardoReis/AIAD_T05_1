@@ -77,7 +77,7 @@
                         	<env:drawcondition>$object.health>0 &amp;&amp; !($object.fighting_fire)</env:drawcondition>
                         </env:texturedrectangle>
                         
-                        <env:texturedrectangle layer="2" imagepath="images/fireman_water.png">
+                        <env:texturedrectangle layer="2"  height="1.0" width="1.5" imagepath="images/fireman_water.png">
                         	<env:drawcondition>$object.health>0 &amp;&amp; ($object.fighting_fire)</env:drawcondition>
                         </env:texturedrectangle>
                         
