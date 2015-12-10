@@ -71,7 +71,7 @@ import forestfire.movement.MoveToLocationPlan;
 public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService {
 	public static final double SAFETY_RANGE = 2.0;
 	public static final double SAVE_HOUSE_RANGE = 1.0;
-	public static final double HOUSE_IN_DANGER_THRESHOLD = 20.0;
+	public static final double HOUSE_IN_DANGER_THRESHOLD = 7.5;
 
 	@Agent
 	protected BDIAgent agent;
@@ -155,7 +155,7 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 				// Else, check if house still needs saving
 				else {
 					ISpaceObject house = terrain_view_aux.getGlobal(houseBeingSaved.getXAsInteger(), houseBeingSaved.getYAsInteger());
-					boolean has_people = (boolean) house.getProperty("house_people");
+					boolean has_people = (float) house.getProperty("people") > 0;
 					boolean burned_down = ((float)house.getProperty("fuel") == 0);
 					
 					if (!has_people || burned_down) houseBeingSaved = null;
@@ -179,7 +179,6 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 	
 	@AgentBody
 	public void body() {
-		
 		Random r = new Random();
 		myself.setProperty("position", new Vector2Double(
 				r.nextDouble() * space.getAreaSize().getXAsDouble(), 
@@ -189,8 +188,7 @@ public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService 
 		System.out.println("Fireman " + myself.getId() + " running.");
 		
 		agent.dispatchTopLevelGoal(new LookForFireGoal());
-		agent.dispatchTopLevelGoal(new RunFromFireGoal());
-		
+		agent.dispatchTopLevelGoal(new RunFromFireGoal());		
 	}
 
 	// #### INLINE PLANS ####

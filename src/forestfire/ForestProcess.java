@@ -41,20 +41,18 @@ public class ForestProcess extends SimplePropertyObject implements
 
 		//add houses
 		int number_of_villages = (int) space.getProperty("villages");
-		int i = 0;
 		ISpaceObject[] terrain = space.getSpaceObjectsByType("terrain");
-		while (i <= number_of_villages) {
-			int v_y = Util.randInt(0, spaceHeight-1);
-			int v_x = Util.randInt(0, spaceWidth-1);
+		for(int i = 0; i <= number_of_villages;) {
+			int v_x = r.nextInt(spaceWidth);
+			int v_y = r.nextInt(spaceHeight);			
 
 			int pos = v_y * spaceWidth + v_x;
 			if((int) terrain[pos].getProperty("type") == 0)
 			{
 				terrain[pos].setProperty("type", 4);
-				terrain[pos].setProperty("house_people", true);
+				terrain[pos].setProperty("people", 10.0f); //Number of seconds it takes a single fireman to save the people
 				i += 1;
-			}
-				
+			}		
 		}
 
 	}

@@ -50,8 +50,8 @@ public class TerrainView {
 
 	public void updateView() {
 		Vector2Double position = (Vector2Double) myself.getProperty("position");
-		pos_x = position.getXAsInteger();
-		pos_y = position.getYAsInteger();
+		pos_x = (int) Math.floor(position.getXAsDouble());
+		pos_y = (int) Math.floor(position.getYAsDouble());
 
 		for (int i = -viewRange; i <= viewRange; i++) {
 			for (int j = -viewRange; j <= viewRange; j++) {
@@ -103,7 +103,7 @@ public class TerrainView {
 			double house_dist = distanceToNearestFire(houses.get(i));
 			if (house_dist < min_dist) {
 				ISpaceObject house = getGlobal(houses.get(i).getXAsInteger(), houses.get(i).getYAsInteger());
-				boolean has_people = (boolean) house.getProperty("house_people");
+				boolean has_people = (float) house.getProperty("people") > 0;
 				boolean burned_down = ((float)house.getProperty("fuel") == 0);
 				
 				if (has_people && !burned_down) {

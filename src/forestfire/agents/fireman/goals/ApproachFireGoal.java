@@ -10,9 +10,9 @@ import forestfire.movement.MoveGoal;
 @Goal
 public class ApproachFireGoal extends MoveGoal {
 
-	public ApproachFireGoal(double actionDistance) {
+	public ApproachFireGoal(double actionRange) {
 		super(null);
-		this.approach_dist = actionDistance - 0.5;
+		this.approach_dist = actionRange - 1;
 		//System.out.println("Goal Approach Fire");
 	}
 	

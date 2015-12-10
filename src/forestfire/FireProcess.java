@@ -140,7 +140,7 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
 						int tx = Math.round(x + Util.fcos(spreadDirection)) % w, ty = Math
 								.round(y - Util.fsin(spreadDirection)) % h;
 
-						next.incFire(tx, ty, current.getFuel(tx, ty) / 100);
+						if (next.getFire(tx, ty) < 50f) next.incFire(tx, ty, current.getFuel(tx, ty) / 100);
 					}
 				}
 
