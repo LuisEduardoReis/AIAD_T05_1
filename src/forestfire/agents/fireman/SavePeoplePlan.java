@@ -17,8 +17,8 @@ import jadex.extension.envsupport.math.IVector2;
 import java.util.HashMap;
 import java.util.Map;
 
-import forestfire.SavePeopleTask;
 import forestfire.agents.fireman.goals.SaveHouseInDangerGoal;
+import forestfire.agents.fireman.tasks.SavePeopleTask;
 
 @Plan
 public class SavePeoplePlan {

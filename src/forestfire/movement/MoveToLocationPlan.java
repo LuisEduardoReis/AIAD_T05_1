@@ -17,7 +17,6 @@ import jadex.extension.envsupport.math.IVector2;
 import java.util.HashMap;
 import java.util.Map;
 
-import forestfire.MoveTask;
 import forestfire.agents.fireman.FiremanBDI;
 
 @Plan

@@ -1,10 +1,11 @@
-package forestfire;
+package forestfire.agents.fireman.tasks;
 
 import jadex.bridge.service.types.clock.IClockService;
 import jadex.extension.envsupport.environment.AbstractTask;
 import jadex.extension.envsupport.environment.IEnvironmentSpace;
 import jadex.extension.envsupport.environment.ISpaceObject;
 import jadex.extension.envsupport.math.IVector2;
+import forestfire.Util;
 import forestfire.agents.fireman.FiremanBDI;
 import forestfire.agents.fireman.TerrainView;
 

@@ -97,6 +97,8 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
 	public void execute(IClockService iClockService,
 			IEnvironmentSpace iEnvironmentSpace) {
 
+		int firemen_dead = 0, people_dead = 0, area_burned = 0, houses_burned = 0;
+		
 		// Debug fire
 		/*
 		for (int i = 0; i < h; i++) {
@@ -108,10 +110,17 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
 		
 		// Propagate fire
 		for (int i = 0; i < terrain.length; i++) {
-			current.fire[i] = next.fire[i] = (float) terrain[i]
-					.getProperty("fire");
-			current.fuel[i] = next.fuel[i] = (float) terrain[i]
-					.getProperty("fuel");
+			current.fire[i] = next.fire[i] = (float) terrain[i].getProperty("fire");
+			current.fuel[i] = next.fuel[i] = (float) terrain[i].getProperty("fuel");
+			
+			if (current.fuel[i] == 0) {
+				area_burned++;
+				if ((int) terrain[i].getProperty("type") == Util.HOUSE) {
+					houses_burned++;
+					if ((float) terrain[i].getProperty("people") > 0)
+						people_dead++;
+				}
+			}			
 		}
 
 		float windDir = ((float) space.getProperty("wind_direction"))* Util.degToRad;
@@ -156,16 +165,22 @@ public class FireProcess extends SimplePropertyObject implements ISpaceProcess {
 		for (ISpaceObject fireman : space.getSpaceObjectsByType("fireman")) {
 			Vector2Double pos = (Vector2Double) fireman.getProperty("position");
 			float fire = next.getFire(pos.getXAsInteger(), pos.getYAsInteger());
-			if (fire > 50) {
-				double current_health = (double) fireman.getProperty("health");
-				fireman.setProperty("health",
-						Math.max(0.0, current_health - 10));
-			}
+			double current_health = (double) fireman.getProperty("health");
+			if (fire > 50)
+				fireman.setProperty("health", Math.max(0.0, current_health - 10));
+			
+			if (current_health == 0) firemen_dead++;			
 		}
 
 		// Change wind
 		if (r.nextInt(250) == 0)
 			setRandomWind();
+		
+		// Update statistics
+		space.setProperty("area_burned", area_burned);
+		space.setProperty("houses_burned", houses_burned);
+		space.setProperty("people_dead", people_dead);
+		space.setProperty("firemen_dead", firemen_dead);
 	}
 
 	private void setRandomWind() {

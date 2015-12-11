@@ -31,8 +31,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import forestfire.Util;
-import forestfire.agents.commander.IGiveOrderService;
-import forestfire.agents.commander.IReportTerrainViewService;
+import forestfire.agents.commander.IFiremanServices;
 import forestfire.agents.fireman.goals.ApproachFireGoal;
 import forestfire.agents.fireman.goals.ApproachHouseInDangerGoal;
 import forestfire.agents.fireman.goals.FightFireGoal;
@@ -62,13 +61,12 @@ import forestfire.movement.MoveToLocationPlan;
 	@Plan(trigger = @Trigger(goals = { SaveHouseInDangerGoal.class }), body = @Body(SavePeoplePlan.class))
 })
 @ProvidedServices({
-	@ProvidedService(type=IReportTerrainViewService.class, implementation=@Implementation(expression="$pojoagent")),
-	@ProvidedService(type=IGiveOrderService.class, implementation=@Implementation(expression="$pojoagent"))
+	@ProvidedService(type=IFiremanServices.class, implementation=@Implementation(expression="$pojoagent"))
 })
 @RequiredServices({
 	@RequiredService(name="clockser", type=IClockService.class, binding=@Binding(scope=RequiredServiceInfo.SCOPE_PLATFORM))
 })
-public class FiremanBDI implements IReportTerrainViewService, IGiveOrderService {
+public class FiremanBDI implements IFiremanServices {
 	public static final double SAFETY_RANGE = 2.0;
 	public static final double SAVE_HOUSE_RANGE = 1.0;
 	public static final double HOUSE_IN_DANGER_THRESHOLD = 7.5;

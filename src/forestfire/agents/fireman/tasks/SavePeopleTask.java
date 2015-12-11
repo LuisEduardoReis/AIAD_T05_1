@@ -1,4 +1,4 @@
-package forestfire;
+package forestfire.agents.fireman.tasks;
 
 import jadex.bridge.service.types.clock.IClockService;
 import jadex.extension.envsupport.environment.AbstractTask;

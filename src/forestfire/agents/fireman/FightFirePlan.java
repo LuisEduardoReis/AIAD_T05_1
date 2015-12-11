@@ -16,9 +16,9 @@ import jadex.extension.envsupport.environment.ISpaceObject;
 import java.util.HashMap;
 import java.util.Map;
 
-import forestfire.FightFireTask;
-import forestfire.MoveTask;
 import forestfire.agents.fireman.goals.FightFireGoal;
+import forestfire.agents.fireman.tasks.FightFireTask;
+import forestfire.movement.MoveTask;
 
 @Plan
 public class FightFirePlan {

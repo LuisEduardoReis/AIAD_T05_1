@@ -18,6 +18,8 @@
         <import>jadex.extension.envsupport.evaluation.*</import>
         <import>jadex.extension.envsupport.observer.gui.plugin.*</import>
 		<import>forestfire.*</import>
+		<import>forestfire.movement.*</import>
+		<import>forestfire.agents.fireman.tasks.*</import>
 
     </imports>
 
@@ -71,6 +73,9 @@
             <env:perspectives>
                 <env:perspective name="icons" class="Perspective2D" objectplacement="center">
                     <env:drawable objecttype="fireman" height="1.0" width="1.0">
+                        <env:property name="viewsize" dynamic="true">new Vector2Double($object.getProperty("viewRange").doubleValue()*2)</env:property>
+                        <env:ellipse layer="2" size="viewsize" abssize="true" color="#FAFA1E32" />
+                        
                         <env:texturedrectangle layer="2" imagepath="images/fireman.png">
                         	<env:drawcondition>$object.health>0 &amp;&amp; !($object.fighting_fire)</env:drawcondition>
                         </env:texturedrectangle>
@@ -82,6 +87,7 @@
                         <env:texturedrectangle layer="2" imagepath="images/dead.png">
                         	<env:drawcondition>$object.health == 0</env:drawcondition>
                         </env:texturedrectangle>
+                        
                     </env:drawable>
 
                     <env:drawable objecttype="terrain" height="1.0" width="1.0">
@@ -153,8 +159,13 @@
                 <env:envspace name="2dspace" type="2dspace">
                   <env:property name="wind_direction" class="Float">50.0f</env:property>
                   <env:property name="wind_velocity" class="Float">1.0f</env:property>
-                  <env:property name="villages" class="int">2</env:property>
-                    
+                  <env:property name="houses" class="int">3</env:property>
+                  
+                  <env:property name="area_burned" class="int">0</env:property>
+                  <env:property name="houses_burned" class="int">0</env:property>
+                  <env:property name="people_dead" class="int">0</env:property>
+                  <env:property name="firemen_dead" class="int">0</env:property>
+                                      
                     <env:processes>
                         <env:process type="create_forest"/>
                         <env:process type="spread_fire"/>
@@ -168,14 +179,14 @@
 
             <components>
                 <component type="Fireman"/>
-                <!-- <component type="Fireman"/> -->
+                <component type="Fireman"/>
                 <component type="Fireman"/>
                 <component type="Fireman"/>
                 <component type="Fireman"/>
                 <component type="Fireman"/>
                 <component type="Fireman"/>                
                 
-                <!-- <component type="Commander"/> -->
+                <component type="Commander"/>
             </components>
 
         </configuration>
