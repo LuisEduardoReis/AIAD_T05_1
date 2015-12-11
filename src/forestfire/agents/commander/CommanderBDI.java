@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import forestfire.Util;
-import forestfire.agents.fireman.FiremanBDI;
 import forestfire.agents.fireman.TerrainView;
 
 @Agent
@@ -43,7 +42,7 @@ public class CommanderBDI {
 	@Belief
 	protected int terrain_height = space.getAreaSize().getYAsInteger();
 
-	@Belief(updaterate=10000)
+	@Belief(updaterate=5000)
 	protected float fire_status[] = updateFireStatus();
 	
 	
@@ -59,7 +58,7 @@ public class CommanderBDI {
 		ArrayList<IVector2> firemen_who_need_orders_pos = new ArrayList<IVector2>();
 		
 		if (firemen != null) {
-			System.out.println("\nCommander asks for report");
+			System.out.println("Commander asks for report");
 			for (int i = 0; i < firemen.size(); i++) {
 				IFiremanServices service = firemen.get(i);
 				TerrainView tv = ((IFiremanServices) service).reportTerrainView();
@@ -86,8 +85,8 @@ public class CommanderBDI {
 			}
 		}
 		
-		if (commander_can_see_fire) {
-			System.out.println("\nCommander sends orders");
+		if (commander_can_see_fire && firemen_who_need_orders.size()>0) {
+			System.out.println("Commander sent orders:");
 			for (int i = 0; i < firemen_who_need_orders.size(); i++) {
 				int ind = firemen_who_need_orders.get(i);
 				IVector2 pos = firemen_who_need_orders_pos.get(i);
@@ -118,7 +117,7 @@ public class CommanderBDI {
 		}
 		
 		if (mindist < Double.MAX_VALUE) {
-			System.out.println("Sent fireman to " + tx + ", " + ty);
+			System.out.println("\tSent fireman to " + tx + ", " + ty);
 			service.giveDestinationOrder(tx, ty);
 		}
 	}

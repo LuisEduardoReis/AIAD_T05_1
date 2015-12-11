@@ -16,8 +16,8 @@ public class FollowDestinationOrderGoal extends MoveGoal {
 		// System.out.println("Goal Follow Festination Order");
 	}
 
-	@GoalDropCondition(rawevents={@RawEvent(ChangeEvent.GOALADOPTED)})
+	@GoalDropCondition(rawevents={@RawEvent(ChangeEvent.GOALADOPTED)}, beliefs="fireInView")
 	public boolean checkDrop(FiremanBDI fireman) {
-		return destination != fireman.getDestinationOrder();
+		return fireman.getFireInView() || destination != fireman.getDestinationOrder();
 	}
 }

@@ -46,13 +46,13 @@ import forestfire.movement.MoveToLocationPlan;
 @Service
 @Goals({
 	@Goal(clazz=LookForFireGoal.class),
-	@Goal(clazz=ApproachFireGoal.class, deliberation=@Deliberation(inhibits={LookForFireGoal.class}, cardinalityone=true)),
-	@Goal(clazz=FollowDestinationOrderGoal.class, deliberation=@Deliberation(inhibits={LookForFireGoal.class, ApproachFireGoal.class}, cardinalityone=true)),
-	@Goal(clazz=ApproachHouseInDangerGoal.class, deliberation=@Deliberation(inhibits={FollowDestinationOrderGoal.class, ApproachFireGoal.class, LookForFireGoal.class}, cardinalityone=true)),
-	@Goal(clazz=RunFromFireGoal.class, deliberation = @Deliberation(inhibits = {LookForFireGoal.class, ApproachFireGoal.class, FollowDestinationOrderGoal.class }, cardinalityone = true)),
+	@Goal(clazz=FollowDestinationOrderGoal.class, 	deliberation=@Deliberation(inhibits={LookForFireGoal.class  },cardinalityone=true)),
+	@Goal(clazz=ApproachFireGoal.class, 			deliberation=@Deliberation(inhibits={LookForFireGoal.class, FollowDestinationOrderGoal.class  }, cardinalityone=true)),	
+	@Goal(clazz=ApproachHouseInDangerGoal.class, 	deliberation=@Deliberation(inhibits={LookForFireGoal.class, FollowDestinationOrderGoal.class, ApproachFireGoal.class  },cardinalityone=true)),
+	@Goal(clazz=RunFromFireGoal.class, 				deliberation=@Deliberation(inhibits={LookForFireGoal.class, FollowDestinationOrderGoal.class, ApproachFireGoal.class, ApproachHouseInDangerGoal.class  },cardinalityone = true)),
 	
-	@Goal(clazz=FightFireGoal.class, deliberation=@Deliberation(inhibits={LookForFireGoal.class}, cardinalityone = true)),
-	@Goal(clazz=SaveHouseInDangerGoal.class, deliberation=@Deliberation(inhibits={FightFireGoal.class, ApproachHouseInDangerGoal.class, FollowDestinationOrderGoal.class, ApproachFireGoal.class, LookForFireGoal.class}, cardinalityone = true))
+	@Goal(clazz=FightFireGoal.class, 				deliberation=@Deliberation(inhibits={LookForFireGoal.class, FollowDestinationOrderGoal.class}, cardinalityone = true)),
+	@Goal(clazz=SaveHouseInDangerGoal.class, 		deliberation=@Deliberation(inhibits={LookForFireGoal.class, FollowDestinationOrderGoal.class, ApproachFireGoal.class, ApproachHouseInDangerGoal.class, FightFireGoal.class}, cardinalityone = true))
 })
 @Plans({
 	@Plan(trigger = @Trigger(goals = { LookForFireGoal.class }), body = @Body(LookForFirePlan.class)),

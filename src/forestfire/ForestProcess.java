@@ -39,7 +39,7 @@ public class ForestProcess extends SimplePropertyObject implements
 			}
 		}
 
-		//add houses
+		//Add houses
 		int number_of_houses = (int) space.getProperty("houses");
 		ISpaceObject[] terrain = space.getSpaceObjectsByType("terrain");
 		for(int i = 0; i < number_of_houses;) {
@@ -54,7 +54,6 @@ public class ForestProcess extends SimplePropertyObject implements
 				i += 1;
 			}		
 		}
-
 	}
 
 	@Override
