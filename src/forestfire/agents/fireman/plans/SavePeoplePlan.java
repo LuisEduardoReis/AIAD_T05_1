@@ -1,4 +1,4 @@
-package forestfire.agents.fireman;
+package forestfire.agents.fireman.plans;
 
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.PlanAPI;
@@ -17,6 +17,8 @@ import jadex.extension.envsupport.math.IVector2;
 import java.util.HashMap;
 import java.util.Map;
 
+import forestfire.agents.fireman.FiremanBDI;
+import forestfire.agents.fireman.TerrainView;
 import forestfire.agents.fireman.goals.SaveHouseInDangerGoal;
 import forestfire.agents.fireman.tasks.SavePeopleTask;
 
@@ -57,7 +59,7 @@ public class SavePeoplePlan {
 		space.addTaskListener(mtaskid, myself.getId(), lis);
 		fut.get();
 		
-		fireman.houseBeingSaved = null;
+		fireman.saveHouseBeingSaved();
 		//System.out.println("People saved!");
 	}
 

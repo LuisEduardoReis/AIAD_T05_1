@@ -1,4 +1,4 @@
-package forestfire.agents.fireman;
+package forestfire.agents.fireman.plans;
 
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.PlanAPI;
@@ -10,6 +10,7 @@ import jadex.extension.envsupport.math.Vector2Double;
 
 import java.util.Random;
 
+import forestfire.agents.fireman.FiremanBDI;
 import forestfire.agents.fireman.goals.LookForFireGoal;
 import forestfire.movement.MoveGoal;
 
@@ -35,7 +36,7 @@ public class LookForFirePlan {
 	{
 		Random r = new Random();
 		
-		while(fireman.health > 0) {
+		while(fireman.getHealth() > 0) {
 			Vector2Double dest = new Vector2Double(
 					r.nextDouble() * fireman.getTerrainView().terrain_width, 
 					r.nextDouble() * fireman.getTerrainView().terrain_height);

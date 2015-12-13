@@ -1,4 +1,4 @@
-package forestfire.agents.fireman;
+package forestfire.agents.fireman.plans;
 
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.PlanAPI;
@@ -16,6 +16,7 @@ import jadex.extension.envsupport.environment.ISpaceObject;
 import java.util.HashMap;
 import java.util.Map;
 
+import forestfire.agents.fireman.FiremanBDI;
 import forestfire.agents.fireman.goals.FightFireGoal;
 import forestfire.agents.fireman.tasks.FightFireTask;
 import forestfire.movement.MoveTask;
@@ -42,7 +43,7 @@ public class FightFirePlan {
 	{	
 		ISpaceObject myself	= fireman.getMyself();
 		
-		while(fireman.health > 0) {
+		while(fireman.getHealth() > 0) {
 			
 			Map<Object, Object> props = new HashMap<Object, Object>();
 			props.put(MoveTask.PROPERTY_SCOPE, fireman);

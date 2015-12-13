@@ -39,6 +39,9 @@ import forestfire.agents.fireman.goals.FollowDestinationOrderGoal;
 import forestfire.agents.fireman.goals.LookForFireGoal;
 import forestfire.agents.fireman.goals.RunFromFireGoal;
 import forestfire.agents.fireman.goals.SaveHouseInDangerGoal;
+import forestfire.agents.fireman.plans.FightFirePlan;
+import forestfire.agents.fireman.plans.LookForFirePlan;
+import forestfire.agents.fireman.plans.SavePeoplePlan;
 import forestfire.movement.MoveGoal;
 import forestfire.movement.MoveToLocationPlan;
 
@@ -120,6 +123,8 @@ public class FiremanBDI implements IFiremanServices {
 	// House being Saved belief
 	@Belief
 	protected IVector2 houseBeingSaved = null;
+	
+	public void saveHouseBeingSaved() { houseBeingSaved = null; }
 	
 	// House in Range belief
 	@Belief(dynamic=true)
@@ -262,6 +267,7 @@ public class FiremanBDI implements IFiremanServices {
 		destination_order = new Vector2Double(x, y);
 		agent.dispatchTopLevelGoal(new FollowDestinationOrderGoal(destination_order));
 	}
+
 
 
 }
